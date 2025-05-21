@@ -7,16 +7,22 @@ import { ArrowLeft } from "lucide-react";
 interface BackButtonProps {
   variant?: "default" | "outline" | "ghost";
   className?: string;
+  onClick?: () => void;
 }
 
 const BackButton: React.FC<BackButtonProps> = ({ 
   variant = "ghost", 
-  className = "" 
+  className = "",
+  onClick
 }) => {
   const navigate = useNavigate();
   
   const handleBack = () => {
-    navigate(-1);
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(-1);
+    }
   };
   
   return (
