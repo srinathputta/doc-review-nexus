@@ -1,0 +1,344 @@
+
+import React, { useEffect, useState } from "react";
+import { useApp } from "@/contexts/AppContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ArrowRight, File, Check, X } from "lucide-react";
+import { getMockSamplesByBatchId } from "@/lib/mock-data";
+import { Document, DocumentMetadata } from "@/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+const SampleReviewInterface = () => {
+  const { 
+    currentBatch,
+    currentSample,
+    setCurrentSample,
+    currentSampleIndex,
+    setCurrentSampleIndex,
+    markSample,
+    completeBatchReview
+  } = useApp();
+  
+  const [samples, setSamples] = useState<Document[]>([]);
+  const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  
+  // Load samples when component mounts or currentBatch changes
+  useEffect(() => {
+    if (currentBatch) {
+      const batchSamples = getMockSamplesByBatchId(currentBatch.id);
+      setSamples(batchSamples);
+      
+      // Set the current sample based on the current index
+      if (batchSamples.length > 0) {
+        const sample = batchSamples[currentSampleIndex];
+        setCurrentSample(sample);
+        setMetadata(sample.metadata);
+      }
+    }
+  }, [currentBatch, currentSampleIndex, setCurrentSample]);
+  
+  // Update metadata state when current sample changes
+  useEffect(() => {
+    if (currentSample) {
+      setMetadata(currentSample.metadata);
+    }
+  }, [currentSample]);
+  
+  const handlePrevious = () => {
+    if (currentSampleIndex > 0) {
+      setCurrentSampleIndex(currentSampleIndex - 1);
+    }
+  };
+  
+  const handleNext = () => {
+    if (currentSampleIndex < samples.length - 1) {
+      setCurrentSampleIndex(currentSampleIndex + 1);
+    }
+  };
+  
+  const handleMetadataChange = (key: keyof DocumentMetadata, value: any) => {
+    if (metadata) {
+      setMetadata({
+        ...metadata,
+        [key]: value
+      });
+    }
+  };
+  
+  const handleJudgeChange = (index: number, value: string) => {
+    if (metadata) {
+      const newJudges = [...metadata.judges];
+      newJudges[index] = value;
+      handleMetadataChange('judges', newJudges);
+    }
+  };
+  
+  const handleCitationChange = (index: number, value: string) => {
+    if (metadata) {
+      const newCitations = [...metadata.citations];
+      newCitations[index] = value;
+      handleMetadataChange('citations', newCitations);
+    }
+  };
+  
+  const handleMarkSample = (isGood: boolean) => {
+    if (currentBatch && currentSample) {
+      markSample(currentBatch.id, currentSample.id, isGood);
+      
+      // Move to next sample if available
+      if (currentSampleIndex < samples.length - 1) {
+        setCurrentSampleIndex(currentSampleIndex + 1);
+      } else if (currentBatch.samplesReviewed + 1 >= 10) {
+        // All samples have been reviewed
+        completeBatchReview(currentBatch.id);
+      }
+    }
+  };
+  
+  if (!currentBatch || !currentSample || !metadata) {
+    return <div className="p-6">Loading sample data...</div>;
+  }
+  
+  const allSamplesReviewed = (currentBatch.samplesReviewed >= 10);
+  
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Batch Review</h1>
+          <p className="text-gray-600">
+            Reviewing samples from batch: {currentBatch.name}
+          </p>
+        </div>
+        <div className="flex items-center">
+          <span className="mr-2 text-sm text-gray-600">
+            {currentBatch.samplesReviewed} / 10 reviewed, 
+            {currentBatch.samplesGood} good
+          </span>
+          {allSamplesReviewed && (
+            <Button
+              variant="default"
+              className="bg-teal-700 hover:bg-teal-800"
+              onClick={() => completeBatchReview(currentBatch.id)}
+            >
+              {currentBatch.samplesGood > 5 ? "Approve & Index Batch" : "Send to Manual Intervention"}
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-12 gap-6">
+        {/* Sample list */}
+        <div className="col-span-12 md:col-span-4 lg:col-span-3 bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <h3 className="text-lg font-medium">Sample Documents</h3>
+          </div>
+          <div className="p-2">
+            <ul>
+              {samples.map((sample, index) => (
+                <li 
+                  key={sample.id}
+                  className={`p-2 rounded cursor-pointer text-sm ${
+                    currentSampleIndex === index 
+                      ? "bg-teal-100 text-teal-700" 
+                      : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => setCurrentSampleIndex(index)}
+                >
+                  <div className="flex items-center">
+                    <File size={16} className="mr-2" />
+                    <span className="truncate">{sample.filename}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="p-4 border-t bg-gray-50">
+            <div className="flex justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevious}
+                disabled={currentSampleIndex === 0}
+              >
+                <ArrowLeft size={16} className="mr-1" /> Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm" 
+                onClick={handleNext}
+                disabled={currentSampleIndex === samples.length - 1}
+              >
+                Next <ArrowRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Sample details and form */}
+        <div className="col-span-12 md:col-span-8 lg:col-span-9">
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-4 border-b">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">
+                  Reviewing Sample: {currentSample.filename}
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPdfModalOpen(true)}
+                >
+                  View Full PDF
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="caseName">Case Name</Label>
+                  <Input
+                    id="caseName"
+                    value={metadata.caseName}
+                    onChange={(e) => handleMetadataChange('caseName', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="court">Court</Label>
+                  <Input
+                    id="court"
+                    value={metadata.court}
+                    onChange={(e) => handleMetadataChange('court', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={metadata.date}
+                    onChange={(e) => handleMetadataChange('date', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label>Judges</Label>
+                  <div className="space-y-2 mt-1">
+                    {metadata.judges.map((judge, index) => (
+                      <Input
+                        key={index}
+                        value={judge}
+                        onChange={(e) => handleJudgeChange(index, e.target.value)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="petitioner">Petitioner</Label>
+                  <Input
+                    id="petitioner"
+                    value={metadata.petitioner}
+                    onChange={(e) => handleMetadataChange('petitioner', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="respondent">Respondent</Label>
+                  <Input
+                    id="respondent"
+                    value={metadata.respondent}
+                    onChange={(e) => handleMetadataChange('respondent', e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <Label>Citations</Label>
+                  <div className="space-y-2 mt-1">
+                    {metadata.citations.map((citation, index) => (
+                      <Input
+                        key={index}
+                        value={citation}
+                        onChange={(e) => handleCitationChange(index, e.target.value)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2">
+                  <Label htmlFor="facts">Facts</Label>
+                  <Textarea
+                    id="facts"
+                    value={metadata.facts}
+                    onChange={(e) => handleMetadataChange('facts', e.target.value)}
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <Label htmlFor="summary">Summary</Label>
+                  <Textarea
+                    id="summary"
+                    value={metadata.summary}
+                    onChange={(e) => handleMetadataChange('summary', e.target.value)}
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-8 border-t pt-4 flex justify-end space-x-4">
+                <Button
+                  variant="outline"
+                  className="border-red-500 text-red-500 hover:bg-red-50"
+                  onClick={() => handleMarkSample(false)}
+                >
+                  <X size={18} className="mr-2" />
+                  Mark as Needs Correction
+                </Button>
+                <Button
+                  onClick={() => handleMarkSample(true)}
+                  className="bg-teal-700 hover:bg-teal-800"
+                >
+                  <Check size={18} className="mr-2" />
+                  Mark as Good
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* PDF Modal */}
+      <Dialog open={pdfModalOpen} onOpenChange={setPdfModalOpen}>
+        <DialogContent className="max-w-4xl w-full">
+          <DialogHeader>
+            <DialogTitle>Document Preview: {currentSample.filename}</DialogTitle>
+          </DialogHeader>
+          <div className="bg-gray-100 p-4 rounded-md h-[70vh] flex items-center justify-center">
+            {/* In a real app, this would be an embedded PDF viewer */}
+            <div className="text-center">
+              <File size={64} className="mx-auto mb-4 text-gray-400" />
+              <p>PDF preview would be displayed here</p>
+              <p className="text-sm text-gray-500 mt-2">Sample file: {currentSample.filename}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default SampleReviewInterface;

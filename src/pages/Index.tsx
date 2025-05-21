@@ -1,13 +1,42 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React from "react";
+import { AppProvider } from "@/contexts/AppContext";
+import MainLayout from "@/components/layouts/MainLayout";
+import UploadSection from "@/components/upload/UploadSection";
+import ExtractionQueueSection from "@/components/extraction/ExtractionQueueSection";
+import BatchReviewSection from "@/components/review/BatchReviewSection";
+import IndexedSection from "@/components/indexed/IndexedSection";
+import ManualInterventionSection from "@/components/intervention/ManualInterventionSection";
+import { useApp } from "@/contexts/AppContext";
+
+// Main content router component
+const MainContent: React.FC = () => {
+  const { currentStage } = useApp();
+  
+  switch (currentStage) {
+    case "upload":
+      return <UploadSection />;
+    case "extraction":
+      return <ExtractionQueueSection />;
+    case "review":
+      return <BatchReviewSection />;
+    case "indexed":
+      return <IndexedSection />;
+    case "intervention":
+      return <ManualInterventionSection />;
+    default:
+      return <UploadSection />;
+  }
+};
+
+// Main app component
+const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <AppProvider>
+      <MainLayout>
+        <MainContent />
+      </MainLayout>
+    </AppProvider>
   );
 };
 
