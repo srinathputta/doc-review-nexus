@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AppProvider } from "@/contexts/AppContext";
+import { useLocation } from "react-router-dom";
 import MainLayout from "@/components/layouts/MainLayout";
 import UploadSection from "@/components/upload/UploadSection";
 import ExtractionQueueSection from "@/components/extraction/ExtractionQueueSection";
@@ -31,12 +31,19 @@ const MainContent: React.FC = () => {
 
 // Main app component
 const Index: React.FC = () => {
+  const location = useLocation();
+  const { setCurrentStage } = useApp();
+  
+  // Update current stage based on location path
+  React.useEffect(() => {
+    const path = location.pathname === "/" ? "upload" : location.pathname.slice(1);
+    setCurrentStage(path);
+  }, [location.pathname, setCurrentStage]);
+  
   return (
-    <AppProvider>
-      <MainLayout>
-        <MainContent />
-      </MainLayout>
-    </AppProvider>
+    <MainLayout>
+      <MainContent />
+    </MainLayout>
   );
 };
 

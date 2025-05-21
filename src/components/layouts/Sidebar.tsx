@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { 
   Upload, 
@@ -44,7 +44,20 @@ const NavItem: React.FC<NavItemProps> = ({
 };
 
 const Sidebar: React.FC = () => {
-  const { currentStage, setCurrentStage } = useApp();
+  const { setCurrentStage } = useApp();
+  const location = useLocation();
+  const path = location.pathname === "/" ? "/upload" : location.pathname;
+  
+  // Map path to stage
+  const pathToStage = (path: string) => {
+    return path.replace('/', '') || 'upload';
+  };
+  
+  // Set current stage based on location when component mounts or location changes
+  React.useEffect(() => {
+    const stage = pathToStage(path);
+    setCurrentStage(stage);
+  }, [path, setCurrentStage]);
   
   return (
     <div className="flex flex-col w-64 min-h-screen border-r bg-white">
@@ -57,36 +70,31 @@ const Sidebar: React.FC = () => {
           href="/upload"
           icon={Upload}
           label="Upload"
-          active={currentStage === "upload"}
-          onClick={() => setCurrentStage("upload")}
+          active={path === "/upload"}
         />
         <NavItem
           href="/extraction"
           icon={Clock}
           label="Extraction Queue"
-          active={currentStage === "extraction"}
-          onClick={() => setCurrentStage("extraction")}
+          active={path === "/extraction"}
         />
         <NavItem
           href="/review"
           icon={Edit}
           label="Batch Review"
-          active={currentStage === "review"}
-          onClick={() => setCurrentStage("review")}
+          active={path === "/review"}
         />
         <NavItem
           href="/indexed"
           icon={CheckCircle}
           label="Indexed"
-          active={currentStage === "indexed"}
-          onClick={() => setCurrentStage("indexed")}
+          active={path === "/indexed"}
         />
         <NavItem
           href="/intervention"
           icon={AlertCircle}
           label="Manual Intervention"
-          active={currentStage === "intervention"}
-          onClick={() => setCurrentStage("intervention")}
+          active={path === "/intervention"}
         />
       </div>
       
