@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { Batch } from "@/types";
 import SampleReviewInterface from "./SampleReviewInterface";
+import { useNavigate } from "react-router-dom";
 
 const BatchReviewSection: React.FC = () => {
   const { currentBatch, setCurrentBatch } = useApp();
   const reviewReadyBatches = getReviewReadyBatches();
+  const navigate = useNavigate();
   
   // If a batch is selected, show the sample review interface
   if (currentBatch) {
@@ -19,7 +21,7 @@ const BatchReviewSection: React.FC = () => {
   
   return (
     <div className="p-6">
-      <BackButton />
+      <BackButton onClick={() => navigate('/')} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Batch Review</h1>
         <p className="text-gray-600 mt-2">

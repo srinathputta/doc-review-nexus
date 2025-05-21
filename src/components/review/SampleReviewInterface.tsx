@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 const SampleReviewInterface = () => {
   const { 
     currentBatch,
+    setCurrentBatch,
     currentSample,
     setCurrentSample,
     currentSampleIndex,
@@ -99,6 +100,12 @@ const SampleReviewInterface = () => {
     }
   };
   
+  const handleBackToBatchList = () => {
+    // Clear the selected sample but keep the batch
+    setCurrentSample(null);
+    setCurrentSampleIndex(0);
+  };
+  
   if (!currentBatch || !currentSample || !metadata) {
     return <div className="p-6">Loading sample data...</div>;
   }
@@ -107,7 +114,7 @@ const SampleReviewInterface = () => {
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <BackButton onClick={() => setCurrentSample(null)} />
+      <BackButton onClick={handleBackToBatchList} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Batch Review</h1>
