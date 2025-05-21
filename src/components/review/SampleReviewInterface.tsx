@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import BackButton from "@/components/ui/back-button";
 import { ArrowLeft, ArrowRight, File, Check, X } from "lucide-react";
 import { getMockSamplesByBatchId } from "@/lib/mock-data";
 import { Document, DocumentMetadata } from "@/types";
@@ -107,6 +107,7 @@ const SampleReviewInterface = () => {
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <BackButton onClick={() => setCurrentSample(null)} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Batch Review</h1>

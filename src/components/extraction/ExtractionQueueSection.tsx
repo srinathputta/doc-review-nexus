@@ -4,6 +4,7 @@ import { useApp } from "@/contexts/AppContext";
 import { getExtractionQueueBatches } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import BackButton from "@/components/ui/back-button";
 import { Batch } from "@/types";
 
 const ExtractionQueueSection: React.FC = () => {
@@ -11,6 +12,7 @@ const ExtractionQueueSection: React.FC = () => {
   
   return (
     <div className="p-6">
+      <BackButton />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Extraction Queue</h1>
         <p className="text-gray-600 mt-2">

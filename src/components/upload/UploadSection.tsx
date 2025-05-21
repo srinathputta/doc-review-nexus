@@ -1,13 +1,12 @@
-
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BackButton from "@/components/ui/back-button";
 import { useApp } from "@/contexts/AppContext";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
-const UploadSection: React.FC = () => {
+const UploadSection = () => {
   const { uploadBatch } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   
@@ -45,6 +44,7 @@ const UploadSection: React.FC = () => {
   
   return (
     <div className="p-6">
+      <BackButton />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Upload Documents</h1>
         <p className="text-gray-600 mt-2">
