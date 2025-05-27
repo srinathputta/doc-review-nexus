@@ -30,19 +30,6 @@
  */
 
 /**
- * @typedef {Object} DocumentMetadata
- * @property {string} caseName
- * @property {string} court
- * @property {string} date
- * @property {string[]} judges
- * @property {string} petitioner
- * @property {string} respondent
- * @property {string} facts
- * @property {string} summary
- * @property {string[]} citations
- */
-
-/**
  * @typedef {Object} Batch
  * @property {string} id
  * @property {string} name
@@ -57,7 +44,7 @@
  */
 
 /**
- * @typedef {'uploading' | 'uploaded_to_s3' | 'unpacking' | 'queued' | 'extracting' | 'extracted' | 'pending_basic_extraction' | 'basic_extraction_in_progress' | 'pending_basic_review' | 'basic_review_in_progress' | 'pending_summary_extraction' | 'summary_extraction_in_progress' | 'pending_summary_review' | 'summary_review_in_progress' | 'review_ready' | 'basic_review_in_progress' | 'ready_for_indexing' | 'indexing_in_progress' | 'indexed' | 'manual_intervention' | 'error'} BatchStatus
+ * @typedef {'uploading' | 'uploaded_to_s3' | 'pending_basic_extraction' | 'basic_extraction_in_progress' | 'pending_basic_review' | 'basic_review_in_progress' | 'pending_summary_extraction' | 'summary_extraction_in_progress' | 'pending_summary_review' | 'summary_review_in_progress' | 'indexed' | 'manual_intervention' | 'error'} BatchStatus
  */
 
 export {};

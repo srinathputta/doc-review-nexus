@@ -20,8 +20,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/upload" element={<Index />} />
-            <Route path="/extraction" element={<Index />} />
-            <Route path="/review" element={<Index />} />
+            <Route path="/basic-extraction" element={<Index />} />
+            <Route path="/basic-details-review" element={<Index />} />
+            <Route path="/fs-extraction" element={<Index />} />
+            <Route path="/facts-summary-review" element={<Index />} />
             <Route path="/indexed" element={<Index />} />
             <Route path="/intervention" element={<Index />} />
             <Route path="*" element={<NotFound />} />
