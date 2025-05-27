@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -37,15 +38,38 @@ const SampleReviewInterface = () => {
       if (batchSamples.length > 0) {
         const sample = batchSamples[currentSampleIndex];
         setCurrentSample(sample);
-        setMetadata(sample.metadata);
+        // Create compatible metadata structure
+        if (sample.basicMetadata && sample.summaryMetadata) {
+          setMetadata({
+            caseName: sample.basicMetadata.caseName,
+            court: sample.basicMetadata.court,
+            date: sample.basicMetadata.date,
+            judges: sample.basicMetadata.judges,
+            petitioner: sample.basicMetadata.petitioner,
+            respondent: sample.basicMetadata.appellant, // Using appellant as respondent
+            facts: sample.summaryMetadata.facts,
+            summary: sample.summaryMetadata.summary,
+            citations: sample.summaryMetadata.citations
+          });
+        }
       }
     }
   }, [currentBatch, currentSampleIndex, setCurrentSample]);
   
   // Update metadata state when current sample changes
   useEffect(() => {
-    if (currentSample) {
-      setMetadata(currentSample.metadata);
+    if (currentSample && currentSample.basicMetadata && currentSample.summaryMetadata) {
+      setMetadata({
+        caseName: currentSample.basicMetadata.caseName,
+        court: currentSample.basicMetadata.court,
+        date: currentSample.basicMetadata.date,
+        judges: currentSample.basicMetadata.judges,
+        petitioner: currentSample.basicMetadata.petitioner,
+        respondent: currentSample.basicMetadata.appellant,
+        facts: currentSample.summaryMetadata.facts,
+        summary: currentSample.summaryMetadata.summary,
+        citations: currentSample.summaryMetadata.citations
+      });
     }
   }, [currentSample]);
   
@@ -93,7 +117,7 @@ const SampleReviewInterface = () => {
       // Move to next sample if available
       if (currentSampleIndex < samples.length - 1) {
         setCurrentSampleIndex(currentSampleIndex + 1);
-      } else if (currentBatch.samplesReviewed + 1 >= 10) {
+      } else if ((currentBatch.samplesReviewed || 0) + 1 >= 10) {
         // All samples have been reviewed
         completeBatchReview(currentBatch.id);
       }
@@ -110,7 +134,7 @@ const SampleReviewInterface = () => {
     return <div className="p-6">Loading sample data...</div>;
   }
   
-  const allSamplesReviewed = (currentBatch.samplesReviewed >= 10);
+  const allSamplesReviewed = ((currentBatch.samplesReviewed || 0) >= 10);
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -124,8 +148,8 @@ const SampleReviewInterface = () => {
         </div>
         <div className="flex items-center">
           <span className="mr-2 text-sm text-gray-600">
-            {currentBatch.samplesReviewed} / 10 reviewed, 
-            {currentBatch.samplesGood} good
+            {currentBatch.samplesReviewed || 0} / 10 reviewed, 
+            {currentBatch.samplesGood || 0} good
           </span>
           {allSamplesReviewed && (
             <Button
@@ -133,7 +157,7 @@ const SampleReviewInterface = () => {
               className="bg-teal-700 hover:bg-teal-800"
               onClick={() => completeBatchReview(currentBatch.id)}
             >
-              {currentBatch.samplesGood > 5 ? "Approve & Index Batch" : "Send to Manual Intervention"}
+              {(currentBatch.samplesGood || 0) > 5 ? "Approve & Index Batch" : "Send to Manual Intervention"}
             </Button>
           )}
         </div>

@@ -26,6 +26,19 @@ export interface SummaryMetadata {
   citations: string[];
 }
 
+// Legacy interface for backward compatibility
+export interface DocumentMetadata {
+  caseName: string;
+  court: string;
+  date: string;
+  judges: string[];
+  petitioner: string;
+  respondent: string;
+  facts: string;
+  summary: string;
+  citations: string[];
+}
+
 export interface Batch {
   id: string;
   name: string;
@@ -34,11 +47,18 @@ export interface Batch {
   status: BatchStatus;
   documents: Document[];
   errorMessage?: string;
+  samplesReviewed?: number;
+  samplesGood?: number;
+  samples?: Document[];
 }
 
 export type BatchStatus = 
   | 'uploading'
   | 'uploaded_to_s3'
+  | 'unpacking'
+  | 'queued'
+  | 'extracting'
+  | 'extracted'
   | 'pending_basic_extraction'
   | 'basic_extraction_in_progress'
   | 'pending_basic_review'
@@ -47,7 +67,10 @@ export type BatchStatus =
   | 'summary_extraction_in_progress'
   | 'pending_summary_review'
   | 'summary_review_in_progress'
+  | 'review_ready'
+  | 'review_in_progress'
   | 'ready_for_indexing'
   | 'indexing_in_progress'
   | 'indexed'
+  | 'manual_intervention'
   | 'error';

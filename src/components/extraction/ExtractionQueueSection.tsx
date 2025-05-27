@@ -76,7 +76,7 @@ const BatchRow: React.FC<{ batch: Batch }> = ({ batch }) => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <StatusBadge status={batch.status} />
-        {batch.status === 'extracting' && (
+        {batch.status === 'basic_extraction_in_progress' && (
           <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
             <div
               className="bg-teal-500 h-1.5 rounded-full"

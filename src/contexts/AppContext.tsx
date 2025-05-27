@@ -55,14 +55,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTimeout(() => {
       setBatches(prev => 
         prev.map(b => 
-          b.id === newBatch.id ? { ...b, status: 'unpacking' } : b
+          b.id === newBatch.id ? { ...b, status: 'uploaded_to_s3' } : b
         )
       );
       
       setTimeout(() => {
         setBatches(prev => 
           prev.map(b => 
-            b.id === newBatch.id ? { ...b, status: 'queued' } : b
+            b.id === newBatch.id ? { ...b, status: 'pending_basic_extraction' } : b
           )
         );
         
@@ -80,12 +80,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (batch.id !== batchId) return batch;
         
         // Update sample review stats
-        const samplesReviewed = batch.samplesReviewed + 1;
-        const samplesGood = isGood ? batch.samplesGood + 1 : batch.samplesGood;
+        const samplesReviewed = (batch.samplesReviewed || 0) + 1;
+        const samplesGood = isGood ? (batch.samplesGood || 0) + 1 : (batch.samplesGood || 0);
         
         return {
           ...batch,
-          status: 'review_in_progress',
+          status: 'basic_review_in_progress',
           samplesReviewed,
           samplesGood
         };
@@ -104,11 +104,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (batch.id !== batchId) return batch;
         
         // Determine if batch passed the review
-        const newStatus = batch.samplesGood > 5 ? 'indexed' : 'manual_intervention';
+        const newStatus = (batch.samplesGood || 0) > 5 ? 'indexed' : 'error';
         
         toast({
           title: newStatus === 'indexed' ? "Batch approved for indexing" : "Batch flagged for manual intervention",
-          description: `${batch.samplesGood} of ${batch.samplesReviewed} samples were marked as good.`,
+          description: `${batch.samplesGood || 0} of ${batch.samplesReviewed || 0} samples were marked as good.`,
         });
         
         return {

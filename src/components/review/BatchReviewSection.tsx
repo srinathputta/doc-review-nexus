@@ -94,8 +94,8 @@ const BatchRow: React.FC<{ batch: Batch; onSelect: () => void }> = ({ batch, onS
         <StatusBadge status={batch.status} />
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {batch.samplesReviewed} / 10{" "}
-        {batch.samplesReviewed > 0 && `(${batch.samplesGood} Good)`}
+        {batch.samplesReviewed || 0} / 10{" "}
+        {batch.samplesReviewed && batch.samplesReviewed > 0 && `(${batch.samplesGood || 0} Good)`}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <Button 
@@ -104,7 +104,7 @@ const BatchRow: React.FC<{ batch: Batch; onSelect: () => void }> = ({ batch, onS
           className="text-teal-700 hover:text-teal-800"
           onClick={onSelect}
         >
-          {batch.samplesReviewed > 0 ? "Continue Review" : "Start Review"}
+          {batch.samplesReviewed && batch.samplesReviewed > 0 ? "Continue Review" : "Start Review"}
         </Button>
       </td>
     </tr>

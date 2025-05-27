@@ -1,5 +1,4 @@
-
-import { Batch, Document, DocumentMetadata } from "../types";
+import { Batch, Document, DocumentMetadata, BasicMetadata, SummaryMetadata } from "../types";
 
 // Sample document metadata template
 const createSampleMetadata = (index: number): DocumentMetadata => {
@@ -16,6 +15,26 @@ const createSampleMetadata = (index: number): DocumentMetadata => {
   };
 };
 
+const createBasicMetadata = (index: number): BasicMetadata => {
+  return {
+    caseNo: `CASE-${index}-2023`,
+    caseName: `Case ${index} v. State`,
+    court: `Supreme Court of State ${index % 5 + 1}`,
+    date: new Date(2022, index % 12, (index % 28) + 1).toISOString().split('T')[0],
+    judges: [`Judge ${index % 10 + 1}`, `Judge ${(index % 10) + 2}`],
+    petitioner: `Petitioner ${index}`,
+    appellant: `Respondent ${index}`
+  };
+};
+
+const createSummaryMetadata = (index: number): SummaryMetadata => {
+  return {
+    facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court.`,
+    summary: `Summary of legal proceedings for case ${index}. The court found in favor of the plaintiff on several counts.`,
+    citations: [`Citation ${index}A`, `Citation ${index}B`]
+  };
+};
+
 // Create sample documents
 const createSampleDocuments = (batchId: string, count: number, startIndex = 0): Document[] => {
   return Array.from({ length: count }).map((_, i) => {
@@ -24,8 +43,9 @@ const createSampleDocuments = (batchId: string, count: number, startIndex = 0): 
       id: `doc-${batchId}-${index}`,
       filename: `document-${index}.pdf`,
       batchId,
-      status: 'extracted',
-      metadata: createSampleMetadata(index),
+      status: 'basic_extracted',
+      basicMetadata: createBasicMetadata(index),
+      summaryMetadata: createSummaryMetadata(index),
       pdfUrl: `/sample-pdf.pdf` // This would be a real URL in a production app
     };
   });
@@ -50,7 +70,7 @@ export const mockBatches: Batch[] = [
     name: 'Legal Cases Q2 2023',
     uploadDate: '2023-04-02',
     totalDocuments: 18,
-    status: 'unpacking',
+    status: 'uploaded_to_s3',
     samplesReviewed: 0,
     samplesGood: 0,
     documents: []
@@ -61,7 +81,7 @@ export const mockBatches: Batch[] = [
     name: 'Legal Cases Q3 2023',
     uploadDate: '2023-07-10',
     totalDocuments: 30,
-    status: 'queued',
+    status: 'pending_basic_extraction',
     samplesReviewed: 0,
     samplesGood: 0,
     documents: []
@@ -72,7 +92,7 @@ export const mockBatches: Batch[] = [
     name: 'Special Cases 2023',
     uploadDate: '2023-09-05',
     totalDocuments: 15,
-    status: 'extracting',
+    status: 'basic_extraction_in_progress',
     samplesReviewed: 0,
     samplesGood: 0,
     documents: createSampleDocuments('batch-4', 15)
@@ -118,7 +138,7 @@ export const mockBatches: Batch[] = [
     name: 'Patent Cases 2023',
     uploadDate: '2023-12-10',
     totalDocuments: 12,
-    status: 'manual_intervention',
+    status: 'error',
     samplesReviewed: 10,
     samplesGood: 4,
     documents: createSampleDocuments('batch-8', 12),
@@ -164,13 +184,13 @@ export const getIndexedDocuments = () => {
 
 export const getManualInterventionBatches = () => {
   return mockBatches.filter(
-    batch => batch.status === 'manual_intervention' || batch.status === 'error'
+    batch => batch.status === 'error'
   );
 };
 
 export const getExtractionQueueBatches = () => {
   return mockBatches.filter(
-    batch => ['queued', 'extracting', 'extracted'].includes(batch.status)
+    batch => ['pending_basic_extraction', 'basic_extraction_in_progress', 'basic_extracted'].includes(batch.status)
   );
 };
 
@@ -182,6 +202,6 @@ export const getReviewReadyBatches = () => {
 
 export const getRecentBatches = () => {
   return mockBatches.filter(
-    batch => ['uploading', 'unpacking', 'queued'].includes(batch.status)
+    batch => ['uploading', 'uploaded_to_s3', 'pending_basic_extraction'].includes(batch.status)
   ).slice(0, 5);
 };

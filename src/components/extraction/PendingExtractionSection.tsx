@@ -25,7 +25,7 @@ const PendingExtractionSection: React.FC = () => {
       const batches = await flaskApi.getBatches();
       const allDocs = batches.flatMap(batch => batch.documents);
       const pendingDocs = allDocs.filter(doc => 
-        ['basic_extracted', 'pending_summary_extraction', 'summary_extracted'].includes(doc.status)
+        ['basic_extracted', 'summary_extracted'].includes(doc.status)
       );
       setDocuments(pendingDocs);
     } catch (error) {
@@ -159,9 +159,6 @@ const PendingExtractionSection: React.FC = () => {
                       >
                         Review Summary & Facts
                       </Button>
-                    )}
-                    {document.status === 'pending_summary_extraction' && (
-                      <span className="text-gray-500">Extracting summary...</span>
                     )}
                   </td>
                 </tr>
