@@ -4,6 +4,7 @@ import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useApp } from "@/contexts/AppContext";
+import { flaskApi } from "@/services/flaskApi";
 import { toast } from "@/hooks/use-toast";
 
 const UploadSection = () => {

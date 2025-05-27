@@ -3,18 +3,24 @@ export interface Document {
   id: string;
   filename: string;
   batchId: string;
-  status: 'extracted' | 'reviewed' | 'indexed' | 'error';
-  metadata: DocumentMetadata;
-  pdfUrl?: string; // URL to view the PDF
+  status: 'uploaded' | 'basic_extracted' | 'basic_reviewed' | 'summary_extracted' | 'summary_reviewed' | 'indexed' | 'error';
+  basicMetadata?: BasicMetadata;
+  summaryMetadata?: SummaryMetadata;
+  pdfUrl?: string;
+  s3Key?: string;
 }
 
-export interface DocumentMetadata {
+export interface BasicMetadata {
+  caseNo: string;
   caseName: string;
   court: string;
   date: string;
   judges: string[];
   petitioner: string;
-  respondent: string;
+  appellant: string;
+}
+
+export interface SummaryMetadata {
   facts: string;
   summary: string;
   citations: string[];
@@ -26,21 +32,22 @@ export interface Batch {
   uploadDate: string;
   totalDocuments: number;
   status: BatchStatus;
-  samplesReviewed: number;
-  samplesGood: number;
   documents: Document[];
-  samples?: Document[];
   errorMessage?: string;
 }
 
 export type BatchStatus = 
   | 'uploading'
-  | 'unpacking'
-  | 'queued'
-  | 'extracting'
-  | 'extracted'
-  | 'review_ready'
-  | 'review_in_progress'
+  | 'uploaded_to_s3'
+  | 'pending_basic_extraction'
+  | 'basic_extraction_in_progress'
+  | 'pending_basic_review'
+  | 'basic_review_in_progress'
+  | 'pending_summary_extraction'
+  | 'summary_extraction_in_progress'
+  | 'pending_summary_review'
+  | 'summary_review_in_progress'
+  | 'ready_for_indexing'
+  | 'indexing_in_progress'
   | 'indexed'
-  | 'manual_intervention'
   | 'error';
