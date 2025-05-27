@@ -1,18 +1,19 @@
+
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useApp } from "@/contexts/AppContext";
-import { flaskApi } from "@/services/flaskApi";
 import { toast } from "@/hooks/use-toast";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 const UploadSection = () => {
-  const { uploadBatch } = useApp();
+  const { uploadBatch, batches } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    (acceptedFiles) => {
       if (acceptedFiles.length === 0) return;
       
       const file = acceptedFiles[0];
@@ -92,22 +93,30 @@ const UploadSection = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {/* We'll populate this with recent batches from context */}
-              {/* Placeholder row for empty state */}
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  No recent batches
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  -
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  -
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  -
-                </td>
-              </tr>
+              {batches.slice(0, 5).map((batch) => (
+                <tr key={batch.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{batch.name}</div>
+                    <div className="text-sm text-gray-500">{batch.id}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {batch.uploadDate}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {batch.totalDocuments}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <StatusBadge status={batch.status} />
+                  </td>
+                </tr>
+              ))}
+              {batches.length === 0 && (
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" colSpan={4}>
+                    No recent batches
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -1,13 +1,8 @@
 
 import React from "react";
 import Sidebar from "./Sidebar";
-import { useApp } from "@/contexts/AppContext";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />

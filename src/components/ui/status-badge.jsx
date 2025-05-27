@@ -1,13 +1,7 @@
 
 import { cn } from "@/lib/utils";
-import { BatchStatus } from "@/types";
 
-interface StatusBadgeProps {
-  status: BatchStatus | string;
-  className?: string;
-}
-
-const statusStyles: Record<string, string> = {
+const statusStyles = {
   uploading: "bg-blue-100 text-blue-800",
   uploaded_to_s3: "bg-blue-100 text-blue-800",
   pending_basic_extraction: "bg-yellow-100 text-yellow-800",
@@ -22,12 +16,10 @@ const statusStyles: Record<string, string> = {
   indexing_in_progress: "bg-green-100 text-green-800",
   indexed: "bg-teal-100 text-teal-800",
   error: "bg-red-100 text-red-800",
-  // Legacy statuses
-  basic_extracted: "bg-purple-100 text-purple-800",
-  summary_extracted: "bg-purple-100 text-purple-800",
+  manual_intervention: "bg-red-100 text-red-800",
 };
 
-const statusLabels: Record<string, string> = {
+const statusLabels = {
   uploading: "Uploading",
   uploaded_to_s3: "Uploaded to S3",
   pending_basic_extraction: "Pending Basic Extraction",
@@ -42,23 +34,19 @@ const statusLabels: Record<string, string> = {
   indexing_in_progress: "Indexing",
   indexed: "Indexed",
   error: "Error",
-  // Legacy statuses
-  basic_extracted: "Basic Extracted",
-  summary_extracted: "Summary Extracted",
+  manual_intervention: "Manual Intervention",
 };
 
-export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
-  const statusKey = status as string;
-  
+export const StatusBadge = ({ status, className }) => {
   return (
     <span
       className={cn(
         "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-        statusStyles[statusKey] || "bg-gray-100 text-gray-800",
+        statusStyles[status] || "bg-gray-100 text-gray-800",
         className
       )}
     >
-      {statusLabels[statusKey] || status}
+      {statusLabels[status] || status}
     </span>
   );
 };

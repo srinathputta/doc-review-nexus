@@ -40,8 +40,7 @@ const Index = () => {
   
   React.useEffect(() => {
     const path = location.pathname === "/" ? "upload" : location.pathname.slice(1);
-    const stage = path.replace(/-/g, '-'); // Keep dashes for multi-word stages
-    setCurrentStage(stage);
+    setCurrentStage(path);
   }, [location.pathname, setCurrentStage]);
   
   return (
