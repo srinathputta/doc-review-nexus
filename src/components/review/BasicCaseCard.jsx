@@ -4,18 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Save, X, Eye, Check, AlertTriangle } from "lucide-react";
+import { Edit, Save, X, Eye } from "lucide-react";
 
-const EditableCaseCard = ({ 
-  document, 
-  onSave, 
-  onCancel, 
-  onMarkGood, 
-  onMarkBad, 
-  showMarkingButtons = false 
-}) => {
+const BasicCaseCard = ({ document, onSave, onCancel }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [originalData, setOriginalData] = useState({
     caseName: document.basicMetadata?.caseName || '',
@@ -23,10 +15,7 @@ const EditableCaseCard = ({
     date: document.basicMetadata?.date || '',
     petitioner: document.basicMetadata?.petitioner || '',
     appellant: document.basicMetadata?.appellant || '',
-    judges: document.basicMetadata?.judges || [],
-    facts: document.summaryMetadata?.facts || '',
-    summary: document.summaryMetadata?.summary || '',
-    citations: document.summaryMetadata?.citations || []
+    judges: document.basicMetadata?.judges || []
   });
   const [editedData, setEditedData] = useState({...originalData});
 
@@ -59,16 +48,6 @@ const EditableCaseCard = ({
       ...prev,
       [field]: prev[field].map((item, i) => i === index ? value : item)
     }));
-  };
-
-  const handleMarkGood = () => {
-    if (onMarkGood) onMarkGood();
-    if (onCancel) onCancel();
-  };
-
-  const handleMarkBad = () => {
-    if (onMarkBad) onMarkBad();
-    if (onCancel) onCancel();
   };
 
   return (
@@ -114,7 +93,6 @@ const EditableCaseCard = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Basic Metadata Section */}
         <div>
           <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Basic Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,95 +188,9 @@ const EditableCaseCard = ({
             </div>
           </div>
         </div>
-
-        {/* Summary Metadata Section */}
-        {(document.summaryMetadata || editedData.facts || editedData.summary) && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Facts & Summary</h3>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="facts">Facts</Label>
-                {isEditing ? (
-                  <Textarea
-                    id="facts"
-                    value={editedData.facts}
-                    onChange={(e) => handleFieldChange('facts', e.target.value)}
-                    className="mt-1"
-                    rows={4}
-                  />
-                ) : (
-                  <div className="mt-1 p-3 bg-gray-50 rounded border min-h-[100px]">
-                    {editedData.facts || 'N/A'}
-                  </div>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="summary">Summary</Label>
-                {isEditing ? (
-                  <Textarea
-                    id="summary"
-                    value={editedData.summary}
-                    onChange={(e) => handleFieldChange('summary', e.target.value)}
-                    className="mt-1"
-                    rows={4}
-                  />
-                ) : (
-                  <div className="mt-1 p-3 bg-gray-50 rounded border min-h-[100px]">
-                    {editedData.summary || 'N/A'}
-                  </div>
-                )}
-              </div>
-              
-              <div>
-                <Label>Citations</Label>
-                {isEditing ? (
-                  <div className="space-y-2 mt-1">
-                    {editedData.citations.map((citation, index) => (
-                      <Input
-                        key={index}
-                        value={citation}
-                        onChange={(e) => handleArrayFieldChange('citations', index, e.target.value)}
-                        placeholder={`Citation ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-1 p-2 bg-gray-50 rounded border">
-                    {editedData.citations.length > 0 ? editedData.citations.join('; ') : 'N/A'}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Sample Review Actions */}
-        {showMarkingButtons && (
-          <div className="border-t pt-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Sample Review</h3>
-            <div className="flex justify-end space-x-4">
-              <Button
-                variant="outline"
-                className="border-red-500 text-red-500 hover:bg-red-50"
-                onClick={handleMarkBad}
-              >
-                <AlertTriangle size={18} className="mr-2" />
-                Mark as Needs Correction
-              </Button>
-              <Button
-                onClick={handleMarkGood}
-                className="bg-teal-700 hover:bg-teal-800"
-              >
-                <Check size={18} className="mr-2" />
-                Mark as Good
-              </Button>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
 };
 
-export default EditableCaseCard;
+export default BasicCaseCard;

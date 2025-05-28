@@ -1,11 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
-import { getSummaryReviewBatches, getMockSamplesByBatchId } from "@/lib/mock-data";
+import { getSummaryReviewBatches, getMockDocumentsByBatchId } from "@/lib/mock-data";
 import EditableCaseCard from "./EditableCaseCard";
 
 const FactsSummaryReview = () => {
@@ -24,7 +24,7 @@ const FactsSummaryReview = () => {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Facts & Summary Review Queue</h1>
         <p className="text-gray-600 mt-2">
-          Review and verify facts and summary data for sample documents from each batch.
+          Review and verify facts and summary data for 10 random sample documents from each batch.
         </p>
       </div>
       
@@ -67,7 +67,7 @@ const FactsSummaryReview = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {batch.status === 'summary_review_in_progress' 
-                      ? `${batch.samplesReviewed || 0}/10 samples reviewed`
+                      ? `${batch.samplesReviewed || 0}/10 samples reviewed (${batch.samplesGood || 0} good)`
                       : '0/10 samples reviewed'
                     }
                   </td>
@@ -106,34 +106,70 @@ const FactsSummaryReviewInterface = () => {
   
   if (!currentBatch) return null;
   
-  const samples = getMockSamplesByBatchId(currentBatch.id);
-  const selectedSample = samples.find(sample => sample.id === selectedSampleId);
+  // Generate 10 random samples from the batch documents
+  const sampleDocuments = useMemo(() => {
+    const allDocuments = getMockDocumentsByBatchId(currentBatch.id);
+    if (allDocuments.length <= 10) return allDocuments;
+    
+    // Fisher-Yates shuffle to get random 10 samples
+    const shuffled = [...allDocuments];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, 10);
+  }, [currentBatch.id]);
+  
+  const selectedSample = sampleDocuments.find(sample => sample.id === selectedSampleId);
   
   const handleCompleteReview = () => {
+    const goodSamples = currentBatch.samplesGood || 0;
+    const newStatus = goodSamples > 5 ? 'indexed' : 'error';
+    
     setBatches(prev => 
       prev.map(batch => 
         batch.id === currentBatch.id 
-          ? { ...batch, status: 'indexed' }
+          ? { ...batch, status: newStatus }
           : batch
       )
     );
     setCurrentBatch(null);
   };
 
-  const handleSaveSample = (sampleId, updatedData) => {
+  const handleMarkSample = (sampleId, isGood) => {
+    setBatches(prev => 
+      prev.map(batch => {
+        if (batch.id !== currentBatch.id) return batch;
+        
+        const samplesReviewed = (batch.samplesReviewed || 0) + 1;
+        const samplesGood = isGood ? (batch.samplesGood || 0) + 1 : (batch.samplesGood || 0);
+        
+        return {
+          ...batch,
+          status: 'summary_review_in_progress',
+          samplesReviewed,
+          samplesGood
+        };
+      })
+    );
+    
+    console.log('Sample marked:', sampleId, isGood ? 'Good' : 'Needs correction');
+  };
+
+  const handleSaveSample = (sampleId, updatedData, wasModified) => {
     setBatches(prev => 
       prev.map(batch => {
         if (batch.id !== currentBatch.id) return batch;
         
         return {
           ...batch,
-          samples: batch.samples?.map(sample => {
-            if (sample.id !== sampleId) return sample;
+          documents: batch.documents.map(doc => {
+            if (doc.id !== sampleId) return doc;
             
             return {
-              ...sample,
+              ...doc,
               basicMetadata: {
-                ...sample.basicMetadata,
+                ...doc.basicMetadata,
                 caseName: updatedData.caseName,
                 court: updatedData.court,
                 date: updatedData.date,
@@ -142,18 +178,19 @@ const FactsSummaryReviewInterface = () => {
                 judges: updatedData.judges
               },
               summaryMetadata: {
-                ...sample.summaryMetadata,
+                ...doc.summaryMetadata,
                 facts: updatedData.facts,
                 summary: updatedData.summary,
                 citations: updatedData.citations
-              }
+              },
+              reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes'
             };
           })
         };
       })
     );
     
-    console.log('Sample saved:', sampleId, updatedData);
+    console.log('Sample saved:', sampleId, updatedData, 'Modified:', wasModified);
   };
   
   if (selectedSample) {
@@ -171,10 +208,16 @@ const FactsSummaryReviewInterface = () => {
           document={selectedSample}
           onSave={handleSaveSample}
           onCancel={() => setSelectedSampleId(null)}
+          onMarkGood={() => handleMarkSample(selectedSample.id, true)}
+          onMarkBad={() => handleMarkSample(selectedSample.id, false)}
+          showMarkingButtons={true}
         />
       </div>
     );
   }
+  
+  const canCompleteReview = (currentBatch.samplesReviewed || 0) >= 10;
+  const goodSamples = currentBatch.samplesGood || 0;
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -183,8 +226,12 @@ const FactsSummaryReviewInterface = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Facts & Summary Review</h1>
         <p className="text-gray-600 mt-2">
-          Review and verify facts and summary data for sample documents in batch: {currentBatch.name}
+          Review and verify facts and summary data for 10 random samples from batch: {currentBatch.name}
         </p>
+        <div className="mt-2 text-sm">
+          <span className="font-medium">Progress: </span>
+          {currentBatch.samplesReviewed || 0}/10 samples reviewed, {goodSamples} marked as good
+        </div>
       </div>
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -204,7 +251,7 @@ const FactsSummaryReviewInterface = () => {
                 Facts Available
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                Review Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -212,7 +259,7 @@ const FactsSummaryReviewInterface = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {samples.map((sample) => (
+            {sampleDocuments.map((sample) => (
               <tr key={sample.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{sample.filename}</div>
@@ -227,7 +274,7 @@ const FactsSummaryReviewInterface = () => {
                   {sample.summaryMetadata?.facts ? 'Yes' : 'No'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <StatusBadge status={sample.status} />
+                  <StatusBadge status={sample.reviewStatus || 'pending'} />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Button
@@ -245,13 +292,29 @@ const FactsSummaryReviewInterface = () => {
         </table>
       </div>
       
-      <div className="mt-6 flex justify-end">
-        <Button
-          onClick={handleCompleteReview}
-          className="bg-teal-700 hover:bg-teal-800"
-        >
-          Complete F/S Review & Move to Indexing
-        </Button>
+      <div className="mt-6 flex justify-between items-center">
+        <div className="text-sm text-gray-600">
+          {goodSamples > 5 ? (
+            <span className="text-green-600 font-medium">
+              ✓ Batch quality is good ({goodSamples}/10). Ready for indexing.
+            </span>
+          ) : canCompleteReview ? (
+            <span className="text-red-600 font-medium">
+              ⚠ Batch quality is poor ({goodSamples}/10). Requires manual intervention.
+            </span>
+          ) : (
+            <span>Review more samples to determine batch quality.</span>
+          )}
+        </div>
+        
+        {canCompleteReview && (
+          <Button
+            onClick={handleCompleteReview}
+            className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800" : "bg-red-600 hover:bg-red-700"}
+          >
+            {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Manual Intervention'}
+          </Button>
+        )}
       </div>
     </div>
   );

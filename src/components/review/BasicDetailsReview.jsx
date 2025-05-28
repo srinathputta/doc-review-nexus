@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
 import { getBasicReviewBatches, getMockDocumentsByBatchId } from "@/lib/mock-data";
-import EditableCaseCard from "./EditableCaseCard";
+import BasicCaseCard from "./BasicCaseCard";
 
 const BasicDetailsReview = () => {
   const { currentBatch, setCurrentBatch } = useApp();
@@ -67,7 +67,7 @@ const BasicDetailsReview = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {batch.status === 'basic_review_in_progress' 
-                      ? `${batch.samplesReviewed || 0}/${batch.totalDocuments} reviewed`
+                      ? `${batch.documentsReviewed || 0}/${batch.totalDocuments} reviewed`
                       : 'Not started'
                     }
                   </td>
@@ -120,7 +120,7 @@ const BasicDetailsReviewInterface = () => {
     setCurrentBatch(null);
   };
 
-  const handleSaveDocument = (documentId, updatedData) => {
+  const handleSaveDocument = (documentId, updatedData, wasModified) => {
     setBatches(prev => 
       prev.map(batch => {
         if (batch.id !== currentBatch.id) return batch;
@@ -140,14 +140,15 @@ const BasicDetailsReviewInterface = () => {
                 petitioner: updatedData.petitioner,
                 appellant: updatedData.appellant,
                 judges: updatedData.judges
-              }
+              },
+              reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes'
             };
           })
         };
       })
     );
     
-    console.log('Document saved:', documentId, updatedData);
+    console.log('Document saved:', documentId, updatedData, 'Modified:', wasModified);
   };
   
   if (selectedDocument) {
@@ -155,13 +156,13 @@ const BasicDetailsReviewInterface = () => {
       <div className="p-6 max-w-7xl mx-auto">
         <BackButton onClick={() => setSelectedDocumentId(null)} />
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Review Case Details</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Review Basic Case Details</h1>
           <p className="text-gray-600 mt-2">
             Reviewing document from batch: {currentBatch.name}
           </p>
         </div>
         
-        <EditableCaseCard
+        <BasicCaseCard
           document={selectedDocument}
           onSave={handleSaveDocument}
           onCancel={() => setSelectedDocumentId(null)}
@@ -198,7 +199,7 @@ const BasicDetailsReviewInterface = () => {
                 Date
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                Review Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -221,7 +222,7 @@ const BasicDetailsReviewInterface = () => {
                   {document.basicMetadata?.date || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <StatusBadge status={document.status} />
+                  <StatusBadge status={document.reviewStatus || 'pending'} />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Button
@@ -244,7 +245,7 @@ const BasicDetailsReviewInterface = () => {
           onClick={handleCompleteReview}
           className="bg-teal-700 hover:bg-teal-800"
         >
-          Complete Basic Review & Move to F/S Extraction
+          Complete Basic Review & Send to F/S Extraction
         </Button>
       </div>
     </div>

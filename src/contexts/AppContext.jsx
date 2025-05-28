@@ -63,7 +63,7 @@ export const AppProvider = ({ children }) => {
         
         return {
           ...batch,
-          status: 'basic_review_in_progress',
+          status: 'summary_review_in_progress',
           samplesReviewed,
           samplesGood
         };
@@ -106,7 +106,7 @@ export const AppProvider = ({ children }) => {
         
         return {
           ...batch,
-          status: 'review_ready',
+          status: 'pending_basic_review',
           samplesReviewed: 0,
           samplesGood: 0
         };
@@ -130,6 +130,7 @@ export const AppProvider = ({ children }) => {
       currentSampleIndex,
       setCurrentSampleIndex,
       batches,
+      setBatches,
       uploadBatch,
       markSample,
       completeBatchReview,
