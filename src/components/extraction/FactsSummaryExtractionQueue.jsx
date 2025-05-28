@@ -5,34 +5,40 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
+import { getSummaryExtractionQueueBatches } from "@/lib/mock-data";
 
 const FactsSummaryExtractionQueue = () => {
-  const { batches, setBatches } = useApp();
+  const { setCurrentBatch, setBatches } = useApp();
   const navigate = useNavigate();
   
-  const extractionBatches = batches.filter(batch => 
-    ['pending_summary_extraction', 'summary_extraction_in_progress'].includes(batch.status)
-  );
+  const extractionBatches = getSummaryExtractionQueueBatches();
 
-  const handleStartExtraction = (batchId) => {
-    setBatches(prev => 
-      prev.map(batch => 
-        batch.id === batchId 
-          ? { ...batch, status: 'summary_extraction_in_progress' }
-          : batch
-      )
-    );
-    
-    // Simulate extraction completion
-    setTimeout(() => {
+  const handleStartExtraction = (batch) => {
+    if (batch.status === 'pending_summary_extraction') {
       setBatches(prev => 
-        prev.map(batch => 
-          batch.id === batchId 
-            ? { ...batch, status: 'pending_summary_review' }
-            : batch
+        prev.map(b => 
+          b.id === batch.id 
+            ? { ...b, status: 'summary_extraction_in_progress' }
+            : b
         )
       );
-    }, 3000);
+      
+      // Simulate extraction completion
+      setTimeout(() => {
+        setBatches(prev => 
+          prev.map(b => 
+            b.id === batch.id 
+              ? { ...b, status: 'pending_summary_review' }
+              : b
+          )
+        );
+      }, 3000);
+    }
+  };
+
+  const handleViewBatch = (batch) => {
+    setCurrentBatch(batch);
+    navigate('/facts-summary-review');
   };
 
   return (
@@ -53,13 +59,10 @@ const FactsSummaryExtractionQueue = () => {
                 Batch Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Extraction Date
+                Upload Date
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total PDFs
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reviewer
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -82,28 +85,38 @@ const FactsSummaryExtractionQueue = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {batch.totalDocuments}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Unassigned
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusBadge status={batch.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-teal-700 hover:text-teal-800"
-                      onClick={() => handleStartExtraction(batch.id)}
-                      disabled={batch.status === 'summary_extraction_in_progress'}
-                    >
-                      {batch.status === 'summary_extraction_in_progress' ? 'Processing...' : 'Start F/S Extraction'}
-                    </Button>
+                    <div className="flex gap-2">
+                      {batch.status === 'summary_extraction_in_progress' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-teal-700 hover:text-teal-800"
+                          onClick={() => handleViewBatch(batch)}
+                        >
+                          View Progress
+                        </Button>
+                      )}
+                      {batch.status === 'pending_summary_extraction' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-teal-700 hover:text-teal-800"
+                          onClick={() => handleStartExtraction(batch)}
+                        >
+                          Start F/S Extraction
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                   No batches in F/S extraction queue
                 </td>
               </tr>

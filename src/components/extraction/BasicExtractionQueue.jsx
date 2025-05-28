@@ -5,14 +5,41 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
+import { getBasicExtractionQueueBatches } from "@/lib/mock-data";
 
 const BasicExtractionQueue = () => {
-  const { batches } = useApp();
+  const { setCurrentBatch, setBatches } = useApp();
   const navigate = useNavigate();
   
-  const extractionBatches = batches.filter(batch => 
-    ['pending_basic_extraction', 'basic_extraction_in_progress'].includes(batch.status)
-  );
+  const extractionBatches = getBasicExtractionQueueBatches();
+
+  const handleStartExtraction = (batch) => {
+    if (batch.status === 'pending_basic_extraction') {
+      setBatches(prev => 
+        prev.map(b => 
+          b.id === batch.id 
+            ? { ...b, status: 'basic_extraction_in_progress' }
+            : b
+        )
+      );
+      
+      // Simulate extraction completion
+      setTimeout(() => {
+        setBatches(prev => 
+          prev.map(b => 
+            b.id === batch.id 
+              ? { ...b, status: 'pending_basic_review' }
+              : b
+          )
+        );
+      }, 3000);
+    }
+  };
+
+  const handleViewBatch = (batch) => {
+    setCurrentBatch(batch);
+    navigate('/basic-details-review');
+  };
 
   return (
     <div className="p-6">
@@ -32,13 +59,10 @@ const BasicExtractionQueue = () => {
                 Batch Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Extraction Date
+                Upload Date
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total PDFs
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reviewer
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -61,27 +85,38 @@ const BasicExtractionQueue = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {batch.totalDocuments}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Unassigned
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusBadge status={batch.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-teal-700 hover:text-teal-800"
-                      disabled={batch.status === 'basic_extraction_in_progress'}
-                    >
-                      {batch.status === 'basic_extraction_in_progress' ? 'Processing...' : 'Start Basic Review'}
-                    </Button>
+                    <div className="flex gap-2">
+                      {batch.status === 'basic_extraction_in_progress' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-teal-700 hover:text-teal-800"
+                          onClick={() => handleViewBatch(batch)}
+                        >
+                          View Progress
+                        </Button>
+                      )}
+                      {batch.status === 'pending_basic_extraction' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-teal-700 hover:text-teal-800"
+                          onClick={() => handleStartExtraction(batch)}
+                        >
+                          Start Extraction
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                   No batches in extraction queue
                 </td>
               </tr>
