@@ -1,7 +1,6 @@
-import { Batch, Document, DocumentMetadata, BasicMetadata, SummaryMetadata } from "../types";
 
 // Sample document metadata template
-const createSampleMetadata = (index: number): DocumentMetadata => {
+const createSampleMetadata = (index) => {
   return {
     caseName: `Case ${index} v. State`,
     court: `Supreme Court of State ${index % 5 + 1}`,
@@ -15,7 +14,7 @@ const createSampleMetadata = (index: number): DocumentMetadata => {
   };
 };
 
-const createBasicMetadata = (index: number): BasicMetadata => {
+const createBasicMetadata = (index) => {
   return {
     caseNo: `CASE-${index}-2023`,
     caseName: `Case ${index} v. State`,
@@ -27,7 +26,7 @@ const createBasicMetadata = (index: number): BasicMetadata => {
   };
 };
 
-const createSummaryMetadata = (index: number): SummaryMetadata => {
+const createSummaryMetadata = (index) => {
   return {
     facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court.`,
     summary: `Summary of legal proceedings for case ${index}. The court found in favor of the plaintiff on several counts.`,
@@ -36,7 +35,7 @@ const createSummaryMetadata = (index: number): SummaryMetadata => {
 };
 
 // Create sample documents
-const createSampleDocuments = (batchId: string, count: number, startIndex = 0): Document[] => {
+const createSampleDocuments = (batchId, count, startIndex = 0) => {
   return Array.from({ length: count }).map((_, i) => {
     const index = startIndex + i;
     return {
@@ -192,7 +191,7 @@ export const mockBatches = [
   },
   // Error batch
   {
-    id: 'batch-9',
+    id: 'batch-13',
     name: 'Corporate Law Cases',
     uploadDate: '2023-12-15',
     totalDocuments: 0,
@@ -208,16 +207,16 @@ export const getMockBatches = () => {
   return mockBatches;
 };
 
-export const getMockBatchById = (id: string) => {
+export const getMockBatchById = (id) => {
   return mockBatches.find(batch => batch.id === id);
 };
 
-export const getMockDocumentsByBatchId = (batchId: string) => {
+export const getMockDocumentsByBatchId = (batchId) => {
   const batch = mockBatches.find(b => b.id === batchId);
   return batch?.documents || [];
 };
 
-export const getMockSamplesByBatchId = (batchId: string) => {
+export const getMockSamplesByBatchId = (batchId) => {
   const batch = mockBatches.find(b => b.id === batchId);
   return batch?.samples || [];
 };
