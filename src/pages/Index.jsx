@@ -8,7 +8,7 @@ import BasicDetailsReview from "@/components/review/BasicDetailsReview";
 import FactsSummaryExtractionQueue from "@/components/extraction/FactsSummaryExtractionQueue";
 import FactsSummaryReview from "@/components/review/FactsSummaryReview";
 import IndexedSection from "@/components/indexed/IndexedSection";
-import ManualInterventionSection from "@/components/intervention/ManualInterventionSection";
+import ErrorSection from "@/components/error/ErrorSection";
 import { useApp } from "@/contexts/AppContext";
 
 const MainContent = () => {
@@ -28,7 +28,7 @@ const MainContent = () => {
     case "indexed":
       return <IndexedSection />;
     case "intervention":
-      return <ManualInterventionSection />;
+      return <ErrorSection />;
     default:
       return <UploadSection />;
   }

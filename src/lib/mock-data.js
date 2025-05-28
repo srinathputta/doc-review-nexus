@@ -1,16 +1,21 @@
-
 // Sample document metadata template
 const createSampleMetadata = (index) => {
   return {
+    caseNo: `CASE-${index}-2023`,
     caseName: `Case ${index} v. State`,
     court: `Supreme Court of State ${index % 5 + 1}`,
+    caseType: ['Civil', 'Criminal', 'Constitutional', 'Commercial', 'Family'][index % 5],
     date: new Date(2022, index % 12, (index % 28) + 1).toISOString().split('T')[0],
     judges: [`Judge ${index % 10 + 1}`, `Judge ${(index % 10) + 2}`],
+    citations: [`Citation ${index}A`, `Citation ${index}B`],
     petitioner: `Petitioner ${index}`,
     respondent: `Respondent ${index}`,
+    advocates: [`Advocate ${index}A`, `Advocate ${index}B`],
+    actsSections: [`Act ${index}/Section ${index}`, `Act ${index+1}/Section ${index+1}`],
+    casesReferred: [`Reference Case ${index}`, `Reference Case ${index+1}`],
+    verdict: ['Allowed', 'Dismissed', 'Partly Allowed', 'Reserved'][index % 4],
     facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court.`,
-    summary: `Summary of legal proceedings for case ${index}. The court found in favor of the plaintiff on several counts.`,
-    citations: [`Citation ${index}A`, `Citation ${index}B`]
+    summary: `Summary of legal proceedings for case ${index}. The court found in favor of the plaintiff on several counts.`
   };
 };
 
@@ -19,18 +24,25 @@ const createBasicMetadata = (index) => {
     caseNo: `CASE-${index}-2023`,
     caseName: `Case ${index} v. State`,
     court: `Supreme Court of State ${index % 5 + 1}`,
+    caseType: ['Civil', 'Criminal', 'Constitutional', 'Commercial', 'Family'][index % 5],
     date: new Date(2022, index % 12, (index % 28) + 1).toISOString().split('T')[0],
     judges: [`Judge ${index % 10 + 1}`, `Judge ${(index % 10) + 2}`],
+    citations: [`Citation ${index}A`, `Citation ${index}B`],
     petitioner: `Petitioner ${index}`,
-    appellant: `Respondent ${index}`
+    respondent: `Respondent ${index}`,
+    advocates: [`Advocate ${index}A`, `Advocate ${index}B`],
+    actsSections: [`Act ${index}/Section ${index}`, `Act ${index+1}/Section ${index+1}`],
+    casesReferred: [`Reference Case ${index}`, `Reference Case ${index+1}`],
+    verdict: ['Allowed', 'Dismissed', 'Partly Allowed', 'Reserved'][index % 4]
   };
 };
 
 const createSummaryMetadata = (index) => {
   return {
-    facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court.`,
-    summary: `Summary of legal proceedings for case ${index}. The court found in favor of the plaintiff on several counts.`,
-    citations: [`Citation ${index}A`, `Citation ${index}B`]
+    caseNo: `CASE-${index}-2023`,
+    caseName: `Case ${index} v. State`,
+    facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court including property disputes, contract violations, and constitutional questions.`,
+    summary: `Summary of legal proceedings for case ${index}. The court examined evidence, heard arguments from both parties, and delivered a comprehensive judgment addressing all raised issues.`
   };
 };
 
@@ -45,7 +57,9 @@ const createSampleDocuments = (batchId, count, startIndex = 0) => {
       status: 'basic_extracted',
       basicMetadata: createBasicMetadata(index),
       summaryMetadata: createSummaryMetadata(index),
-      pdfUrl: `/sample-pdf.pdf` // This would be a real URL in a production app
+      pdfUrl: `/sample-pdf.pdf`,
+      reviewStatus: null,
+      isModified: false
     };
   });
 };
@@ -106,7 +120,7 @@ export const mockBatches = [
     samplesReviewed: 0,
     samplesGood: 0,
     documents: createSampleDocuments('batch-5', 22),
-    samples: createSampleDocuments('batch-5', 10, 100)
+    documentsReviewed: 0
   },
   // Basic review in progress
   {
@@ -115,10 +129,10 @@ export const mockBatches = [
     uploadDate: '2023-11-08',
     totalDocuments: 28,
     status: 'basic_review_in_progress',
-    samplesReviewed: 4,
-    samplesGood: 3,
+    samplesReviewed: 0,
+    samplesGood: 0,
     documents: createSampleDocuments('batch-6', 28),
-    samples: createSampleDocuments('batch-6', 10, 200)
+    documentsReviewed: 5
   },
   // Ready for F/S extraction
   {
@@ -151,8 +165,7 @@ export const mockBatches = [
     status: 'pending_summary_review',
     samplesReviewed: 0,
     samplesGood: 0,
-    documents: createSampleDocuments('batch-9', 18),
-    samples: createSampleDocuments('batch-9', 10, 300)
+    documents: createSampleDocuments('batch-9', 18)
   },
   // F/S review in progress
   {
@@ -163,8 +176,7 @@ export const mockBatches = [
     status: 'summary_review_in_progress',
     samplesReviewed: 6,
     samplesGood: 5,
-    documents: createSampleDocuments('batch-10', 14),
-    samples: createSampleDocuments('batch-10', 10, 400)
+    documents: createSampleDocuments('batch-10', 14)
   },
   // Indexed batch
   {
@@ -177,7 +189,7 @@ export const mockBatches = [
     samplesGood: 8,
     documents: createSampleDocuments('batch-11', 40)
   },
-  // Manual intervention required
+  // Error batches
   {
     id: 'batch-12',
     name: 'Patent Cases 2023',
@@ -187,9 +199,8 @@ export const mockBatches = [
     samplesReviewed: 10,
     samplesGood: 4,
     documents: createSampleDocuments('batch-12', 12),
-    samples: createSampleDocuments('batch-12', 10, 500)
+    errorMessage: 'Low quality extraction - requires manual review'
   },
-  // Error batch
   {
     id: 'batch-13',
     name: 'Corporate Law Cases',
@@ -218,7 +229,17 @@ export const getMockDocumentsByBatchId = (batchId) => {
 
 export const getMockSamplesByBatchId = (batchId) => {
   const batch = mockBatches.find(b => b.id === batchId);
-  return batch?.samples || [];
+  const allDocuments = batch?.documents || [];
+  
+  if (allDocuments.length <= 10) return allDocuments;
+  
+  // Fisher-Yates shuffle to get random 10 samples
+  const shuffled = [...allDocuments];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 10);
 };
 
 export const getIndexedDocuments = () => {
@@ -227,7 +248,7 @@ export const getIndexedDocuments = () => {
     .flatMap(batch => batch.documents);
 };
 
-export const getManualInterventionBatches = () => {
+export const getErrorBatches = () => {
   return mockBatches.filter(
     batch => batch.status === 'error'
   );

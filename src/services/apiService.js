@@ -13,7 +13,7 @@ class ApiService {
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object') {
+    if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
       config.body = JSON.stringify(config.body);
     }
 
@@ -55,6 +55,12 @@ class ApiService {
     });
   }
 
+  async sendToFactsSummaryExtraction(batchId) {
+    return this.request(`/batches/${batchId}/send-to-fs-extraction`, {
+      method: 'POST',
+    });
+  }
+
   // Document operations
   async getDocuments(batchId) {
     return this.request(`/batches/${batchId}/documents`);
@@ -71,6 +77,10 @@ class ApiService {
     return this.request(`/batches/${batchId}/samples`);
   }
 
+  async getIndexedDocuments(searchTerm = '') {
+    return this.request(`/documents/indexed?search=${encodeURIComponent(searchTerm)}`);
+  }
+
   // Extraction operations
   async startBasicExtraction(batchId) {
     return this.request(`/extraction/basic/${batchId}`, {
@@ -84,9 +94,20 @@ class ApiService {
     });
   }
 
+  async getExtractionProgress(batchId) {
+    return this.request(`/extraction/progress/${batchId}`);
+  }
+
   // Review operations
-  async submitReview(batchId, reviewData) {
-    return this.request(`/review/${batchId}`, {
+  async submitBasicReview(batchId, documentId, reviewData) {
+    return this.request(`/review/basic/${batchId}/${documentId}`, {
+      method: 'POST',
+      body: reviewData,
+    });
+  }
+
+  async submitSummaryReview(batchId, documentId, reviewData) {
+    return this.request(`/review/summary/${batchId}/${documentId}`, {
       method: 'POST',
       body: reviewData,
     });
@@ -99,11 +120,37 @@ class ApiService {
     });
   }
   
-  async completeBatchReview(batchId, status) {
+  async completeBatchReview(batchId, reviewType, status) {
     return this.request(`/batches/${batchId}/complete-review`, {
       method: 'POST',
-      body: { status },
+      body: { reviewType, status },
     });
+  }
+
+  async approveDocumentForNext(batchId, documentId) {
+    return this.request(`/review/${batchId}/${documentId}/approve-and-next`, {
+      method: 'POST',
+    });
+  }
+
+  // Error and retry operations
+  async getErrorBatches() {
+    return this.request('/batches/errors');
+  }
+
+  async retryBatch(batchId) {
+    return this.request(`/batches/${batchId}/retry`, {
+      method: 'POST',
+    });
+  }
+
+  // Statistics and monitoring
+  async getDashboardStats() {
+    return this.request('/stats/dashboard');
+  }
+
+  async getBatchProgress(batchId) {
+    return this.request(`/batches/${batchId}/progress`);
   }
 }
 

@@ -5,8 +5,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
-import { getSummaryReviewBatches, getMockDocumentsByBatchId } from "@/lib/mock-data";
-import EditableCaseCard from "./EditableCaseCard";
+import { getSummaryReviewBatches, getMockSamplesByBatchId } from "@/lib/mock-data";
+import FactsSummaryCaseCard from "./FactsSummaryCaseCard";
 import { toast } from "@/hooks/use-toast";
 
 const FactsSummaryReview = () => {
@@ -102,29 +102,20 @@ const FactsSummaryReview = () => {
 };
 
 const FactsSummaryReviewInterface = () => {
-  const { currentBatch, setCurrentBatch, batches, setBatches } = useApp();
-  const [selectedSampleIndex, setSelectedSampleIndex] = useState(null);
+  const { currentBatch, setCurrentBatch, batches, setBatches, setCurrentStage } = useApp();
+  const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
+  const navigate = useNavigate();
   
   if (!currentBatch) return null;
   
-  // Generate 10 random samples from the batch documents
   const sampleDocuments = useMemo(() => {
-    const allDocuments = getMockDocumentsByBatchId(currentBatch.id);
-    if (allDocuments.length <= 10) return allDocuments;
-    
-    // Fisher-Yates shuffle to get random 10 samples
-    const shuffled = [...allDocuments];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled.slice(0, 10);
+    return getMockSamplesByBatchId(currentBatch.id);
   }, [currentBatch.id]);
   
-  const selectedSample = selectedSampleIndex !== null ? sampleDocuments[selectedSampleIndex] : null;
+  const selectedSample = sampleDocuments[selectedSampleIndex];
   const reviewedSamples = currentBatch.samplesReviewed || 0;
   const goodSamples = currentBatch.samplesGood || 0;
-  const canCompleteReview = reviewedSamples >= 10;
+  const allSamplesReviewed = reviewedSamples >= 10;
   
   const handleCompleteReview = () => {
     const newStatus = goodSamples > 5 ? 'indexed' : 'error';
@@ -137,6 +128,14 @@ const FactsSummaryReviewInterface = () => {
       )
     );
     setCurrentBatch(null);
+    
+    if (newStatus === 'indexed') {
+      setCurrentStage('indexed');
+      navigate('/indexed');
+    } else {
+      setCurrentStage('intervention');
+      navigate('/intervention');
+    }
     
     toast({
       title: newStatus === 'indexed' ? "Batch approved for indexing" : "Batch flagged for manual intervention",
@@ -166,11 +165,8 @@ const FactsSummaryReviewInterface = () => {
       description: `Sample has been reviewed.`,
     });
     
-    // Move to next sample
     if (selectedSampleIndex < sampleDocuments.length - 1) {
       setSelectedSampleIndex(selectedSampleIndex + 1);
-    } else {
-      setSelectedSampleIndex(null);
     }
   };
 
@@ -186,22 +182,12 @@ const FactsSummaryReviewInterface = () => {
             
             return {
               ...doc,
-              basicMetadata: {
-                ...doc.basicMetadata,
-                caseName: updatedData.caseName,
-                court: updatedData.court,
-                date: updatedData.date,
-                petitioner: updatedData.petitioner,
-                appellant: updatedData.appellant,
-                judges: updatedData.judges
-              },
               summaryMetadata: {
                 ...doc.summaryMetadata,
-                facts: updatedData.facts,
-                summary: updatedData.summary,
-                citations: updatedData.citations
+                ...updatedData
               },
-              reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes'
+              reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes',
+              isModified: wasModified
             };
           }) || []
         };
@@ -212,6 +198,23 @@ const FactsSummaryReviewInterface = () => {
       title: wasModified ? "Sample updated" : "Sample approved",
       description: `Sample has been ${wasModified ? 'updated and' : ''} saved.`,
     });
+  };
+
+  const handleApproveAndNext = () => {
+    if (selectedSample) {
+      const originalData = {
+        caseNo: selectedSample.summaryMetadata?.caseNo || selectedSample.basicMetadata?.caseNo || '',
+        caseName: selectedSample.summaryMetadata?.caseName || selectedSample.basicMetadata?.caseName || '',
+        facts: selectedSample.summaryMetadata?.facts || '',
+        summary: selectedSample.summaryMetadata?.summary || ''
+      };
+      
+      handleSaveSample(selectedSample.id, originalData, false);
+      
+      if (selectedSampleIndex < sampleDocuments.length - 1) {
+        setSelectedSampleIndex(selectedSampleIndex + 1);
+      }
+    }
   };
 
   const handlePrevious = () => {
@@ -243,23 +246,24 @@ const FactsSummaryReviewInterface = () => {
             <div className="text-sm text-gray-600">
               Progress: {reviewedSamples}/10 samples reviewed ({goodSamples} good)
             </div>
-            {canCompleteReview && (
+            {allSamplesReviewed && (
               <Button
                 onClick={handleCompleteReview}
-                className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800" : "bg-red-600 hover:bg-red-700"}
+                className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-lg px-6 py-3"}
               >
-                {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Manual Intervention'}
+                {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Error Queue'}
               </Button>
             )}
           </div>
         </div>
         
-        <EditableCaseCard
+        <FactsSummaryCaseCard
           document={selectedSample}
-          onSave={(id, data, modified) => handleSaveSample(id, data, modified)}
+          onSave={handleSaveSample}
           onCancel={() => setSelectedSampleIndex(null)}
           onMarkGood={() => handleMarkSample(true)}
           onMarkBad={() => handleMarkSample(false)}
+          onApproveAndNext={handleApproveAndNext}
           showMarkingButtons={true}
         />
         
@@ -296,12 +300,12 @@ const FactsSummaryReviewInterface = () => {
           </p>
         </div>
         
-        {canCompleteReview && (
+        {allSamplesReviewed && (
           <Button
             onClick={handleCompleteReview}
             className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-lg px-6 py-3"}
           >
-            {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Manual Intervention'}
+            {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Error Queue'}
           </Button>
         )}
       </div>
@@ -322,9 +326,9 @@ const FactsSummaryReviewInterface = () => {
           <div className="mt-2 text-sm">
             {goodSamples > 5 ? (
               <span className="text-green-600 font-medium">
-                ✓ Batch quality is good ({goodSamples}/{reviewedSamples}). {canCompleteReview ? 'Ready for indexing.' : `Need ${10-reviewedSamples} more reviews.`}
+                ✓ Batch quality is good ({goodSamples}/{reviewedSamples}). {allSamplesReviewed ? 'Ready for indexing.' : `Need ${10-reviewedSamples} more reviews.`}
               </span>
-            ) : canCompleteReview ? (
+            ) : allSamplesReviewed ? (
               <span className="text-red-600 font-medium">
                 ⚠ Batch quality is poor ({goodSamples}/10). Requires manual intervention.
               </span>
@@ -346,7 +350,7 @@ const FactsSummaryReviewInterface = () => {
                 Case Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Court
+                Case No
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Facts Available
@@ -369,7 +373,7 @@ const FactsSummaryReviewInterface = () => {
                   {sample.basicMetadata?.caseName || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sample.basicMetadata?.court || 'N/A'}
+                  {sample.basicMetadata?.caseNo || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {sample.summaryMetadata?.facts ? 'Yes' : 'No'}

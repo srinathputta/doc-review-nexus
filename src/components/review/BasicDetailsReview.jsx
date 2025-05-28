@@ -102,8 +102,9 @@ const BasicDetailsReview = () => {
 };
 
 const BasicDetailsReviewInterface = () => {
-  const { currentBatch, setCurrentBatch, batches, setBatches } = useApp();
+  const { currentBatch, setCurrentBatch, batches, setBatches, setCurrentStage } = useApp();
   const [selectedDocumentIndex, setSelectedDocumentIndex] = useState(0);
+  const navigate = useNavigate();
   
   if (!currentBatch) return null;
   
@@ -112,7 +113,7 @@ const BasicDetailsReviewInterface = () => {
   const reviewedDocuments = documents.filter(doc => doc.reviewStatus && doc.reviewStatus !== 'pending').length;
   const allDocumentsReviewed = reviewedDocuments === documents.length;
   
-  const handleCompleteReview = () => {
+  const handleSendToFactsSummaryExtraction = () => {
     setBatches(prev => 
       prev.map(batch => 
         batch.id === currentBatch.id 
@@ -121,6 +122,8 @@ const BasicDetailsReviewInterface = () => {
       )
     );
     setCurrentBatch(null);
+    setCurrentStage('fs-extraction');
+    navigate('/fs-extraction');
     
     toast({
       title: "Basic review completed",
@@ -140,14 +143,10 @@ const BasicDetailsReviewInterface = () => {
             ...doc,
             basicMetadata: {
               ...doc.basicMetadata,
-              caseName: updatedData.caseName,
-              court: updatedData.court,
-              date: updatedData.date,
-              petitioner: updatedData.petitioner,
-              appellant: updatedData.appellant,
-              judges: updatedData.judges
+              ...updatedData
             },
-            reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes'
+            reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes',
+            isModified: wasModified
           };
         }) || [];
         
@@ -172,17 +171,24 @@ const BasicDetailsReviewInterface = () => {
 
   const handleApproveAndNext = () => {
     if (selectedDocument) {
-      // Approve current document without modifications
-      handleSaveDocument(selectedDocument.id, {
+      const originalData = {
+        caseNo: selectedDocument.basicMetadata?.caseNo || '',
         caseName: selectedDocument.basicMetadata?.caseName || '',
         court: selectedDocument.basicMetadata?.court || '',
+        caseType: selectedDocument.basicMetadata?.caseType || '',
         date: selectedDocument.basicMetadata?.date || '',
+        judges: selectedDocument.basicMetadata?.judges || [],
+        citations: selectedDocument.basicMetadata?.citations || [],
         petitioner: selectedDocument.basicMetadata?.petitioner || '',
-        appellant: selectedDocument.basicMetadata?.appellant || '',
-        judges: selectedDocument.basicMetadata?.judges || []
-      }, false);
+        respondent: selectedDocument.basicMetadata?.respondent || '',
+        advocates: selectedDocument.basicMetadata?.advocates || [],
+        actsSections: selectedDocument.basicMetadata?.actsSections || [],
+        casesReferred: selectedDocument.basicMetadata?.casesReferred || [],
+        verdict: selectedDocument.basicMetadata?.verdict || ''
+      };
       
-      // Move to next document
+      handleSaveDocument(selectedDocument.id, originalData, false);
+      
       if (selectedDocumentIndex < documents.length - 1) {
         setSelectedDocumentIndex(selectedDocumentIndex + 1);
       }
@@ -220,10 +226,10 @@ const BasicDetailsReviewInterface = () => {
             </div>
             {allDocumentsReviewed && (
               <Button
-                onClick={handleCompleteReview}
-                className="bg-teal-700 hover:bg-teal-800"
+                onClick={handleSendToFactsSummaryExtraction}
+                className="bg-teal-700 hover:bg-teal-800 text-lg px-6 py-3"
               >
-                Complete Basic Review & Send to F/S Extraction
+                Send to Facts & Summary Extraction
               </Button>
             )}
           </div>
@@ -233,6 +239,7 @@ const BasicDetailsReviewInterface = () => {
           document={selectedDocument}
           onSave={handleSaveDocument}
           onCancel={() => setSelectedDocumentIndex(null)}
+          onApproveAndNext={handleApproveAndNext}
         />
         
         <div className="mt-6 flex justify-between items-center">
@@ -244,23 +251,13 @@ const BasicDetailsReviewInterface = () => {
             Previous
           </Button>
           
-          <div className="flex gap-4">
-            <Button
-              onClick={handleApproveAndNext}
-              className="bg-green-600 hover:bg-green-700"
-              disabled={selectedDocumentIndex === documents.length - 1 && selectedDocument.reviewStatus}
-            >
-              Approve & Next
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={handleNext}
-              disabled={selectedDocumentIndex === documents.length - 1}
-            >
-              Next
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleNext}
+            disabled={selectedDocumentIndex === documents.length - 1}
+          >
+            Next
+          </Button>
         </div>
       </div>
     );
@@ -280,10 +277,10 @@ const BasicDetailsReviewInterface = () => {
         
         {allDocumentsReviewed && (
           <Button
-            onClick={handleCompleteReview}
+            onClick={handleSendToFactsSummaryExtraction}
             className="bg-teal-700 hover:bg-teal-800 text-lg px-6 py-3"
           >
-            Complete Basic Review & Send to F/S Extraction
+            Send to Facts & Summary Extraction
           </Button>
         )}
       </div>
