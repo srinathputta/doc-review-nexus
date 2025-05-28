@@ -1,5 +1,7 @@
 
 // API service for backend integration
+import { getMockDocumentsByBatchIdWithOriginal } from '../lib/mock-data';
+// API service for backend integration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
@@ -62,8 +64,8 @@ class ApiService {
   }
 
   // Document operations
-  async getDocuments(batchId) {
-    return this.request(`/batches/${batchId}/documents`);
+  getDocuments(batchId) {
+ return getMockDocumentsByBatchIdWithOriginal(batchId);
   }
 
   async updateDocument(documentId, data) {

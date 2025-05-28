@@ -1,15 +1,14 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useApp } from "@/contexts/AppContext";
 import { getReviewReadyBatches } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
-import { Batch } from "@/types";
 import SampleReviewInterface from "./SampleReviewInterface";
 import { useNavigate } from "react-router-dom";
 
-const BatchReviewSection: React.FC = () => {
+const BatchReviewSection = () => {
   const { currentBatch, setCurrentBatch } = useApp();
   const reviewReadyBatches = getReviewReadyBatches();
   const navigate = useNavigate();
@@ -77,7 +76,7 @@ const BatchReviewSection: React.FC = () => {
 };
 
 // Batch review row component
-const BatchRow: React.FC<{ batch: Batch; onSelect: () => void }> = ({ batch, onSelect }) => {
+const BatchRow = ({ batch, onSelect }) => {
   return (
     <tr>
       <td className="px-6 py-4 whitespace-nowrap">

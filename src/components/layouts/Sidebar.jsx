@@ -97,7 +97,7 @@ const Sidebar = () => {
         <NavItem
           href="/intervention"
           icon={AlertCircle}
-          label="Manual Intervention"
+          label="Error"
           active={path === "/intervention"}
         />
       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -7,13 +6,14 @@ import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
 import { getSummaryReviewBatches, getMockSamplesByBatchId } from "@/lib/mock-data";
 import FactsSummaryCaseCard from "./FactsSummaryCaseCard";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../ui/table";
 import { toast } from "@/hooks/use-toast";
 
 const FactsSummaryReview = () => {
   const { currentBatch, setCurrentBatch } = useApp();
   const navigate = useNavigate();
-  
-  const reviewReadyBatches = getSummaryReviewBatches();
+
+  const reviewReadyBatches = useMemo(() => getSummaryReviewBatches(), []);
 
   if (currentBatch) {
     return <FactsSummaryReviewInterface />;
@@ -28,74 +28,73 @@ const FactsSummaryReview = () => {
           Review and verify facts and summary data for 10 random sample documents from each batch.
         </p>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <Table className="min-w-full">
+          <TableHeader className="bg-gray-50">
+            <TableRow>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Batch Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Upload Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Total PDFs
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Sample Progress
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {reviewReadyBatches.length > 0 ? (
-              reviewReadyBatches.map((batch) => (
-                <tr key={batch.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{batch.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {batch.uploadDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {batch.totalDocuments}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {batch.status === 'summary_review_in_progress' 
-                      ? `${batch.samplesReviewed || 0}/10 samples reviewed (${batch.samplesGood || 0} good)`
-                      : '0/10 samples reviewed'
-                    }
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={batch.status} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-teal-700 hover:text-teal-800"
-                      onClick={() => setCurrentBatch(batch)}
-                    >
-                      {batch.status === 'summary_review_in_progress' ? 'Continue Review' : 'Start Sample Review'}
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No batches ready for facts & summary review
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="bg-white divide-y divide-gray-200">
+            {reviewReadyBatches.length > 0
+              ? reviewReadyBatches.map((batch) => (
+                  <TableRow key={batch.id} className="hover:bg-gray-50">
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{batch.name}</div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {batch.uploadDate}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {batch.totalDocuments}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {batch.status === 'summary_review_in_progress'
+                        ? `${batch.samplesReviewed || 0}/10 samples reviewed (${batch.samplesGood || 0} good)`
+                        : '0/10 samples reviewed'
+                      }
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={batch.status} />
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-teal-700 hover:text-teal-800 border-teal-600 hover:bg-teal-50"
+                        onClick={() => setCurrentBatch(batch)}
+                      >
+                        {batch.status === 'summary_review_in_progress' ? 'Continue Review' : 'Start Sample Review'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              : <TableRow>
+                  <TableCell colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    No batches ready for facts & summary review
+                  </TableCell>
+                </TableRow>
+            }
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -103,32 +102,32 @@ const FactsSummaryReview = () => {
 
 const FactsSummaryReviewInterface = () => {
   const { currentBatch, setCurrentBatch, batches, setBatches, setCurrentStage } = useApp();
-  const [selectedSampleIndex, setSelectedSampleIndex] = useState(0);
+  const [selectedSampleIndex, setSelectedSampleIndex] = useState(null);
   const navigate = useNavigate();
-  
+
   if (!currentBatch) return null;
-  
+
   const sampleDocuments = useMemo(() => {
     return getMockSamplesByBatchId(currentBatch.id);
   }, [currentBatch.id]);
-  
-  const selectedSample = sampleDocuments[selectedSampleIndex];
+
+  const selectedSample = (selectedSampleIndex !== null && sampleDocuments[selectedSampleIndex]) ? sampleDocuments[selectedSampleIndex] : null;
   const reviewedSamples = currentBatch.samplesReviewed || 0;
   const goodSamples = currentBatch.samplesGood || 0;
   const allSamplesReviewed = reviewedSamples >= 10;
-  
+
   const handleCompleteReview = () => {
-    const newStatus = goodSamples > 5 ? 'indexed' : 'error';
-    
-    setBatches(prev => 
-      prev.map(batch => 
-        batch.id === currentBatch.id 
-          ? { ...batch, status: newStatus }
+    const newStatus = goodSamples > 5 ? 'indexed' : 'error_summary_review';
+
+    setBatches(prevBatches =>
+      prevBatches.map(batch =>
+        batch.id === currentBatch.id
+          ? { ...batch, status: newStatus, samplesReviewed, samplesGood }
           : batch
       )
     );
     setCurrentBatch(null);
-    
+
     if (newStatus === 'indexed') {
       setCurrentStage('indexed');
       navigate('/indexed');
@@ -136,7 +135,7 @@ const FactsSummaryReviewInterface = () => {
       setCurrentStage('intervention');
       navigate('/intervention');
     }
-    
+
     toast({
       title: newStatus === 'indexed' ? "Batch approved for indexing" : "Batch flagged for manual intervention",
       description: `${goodSamples} of 10 samples were marked as good.`,
@@ -144,257 +143,263 @@ const FactsSummaryReviewInterface = () => {
   };
 
   const handleMarkSample = (isGood) => {
-    setBatches(prev => 
-      prev.map(batch => {
+    if (!selectedSample) return;
+
+    const updatedSamplesReviewed = reviewedSamples + 1;
+    const updatedSamplesGood = isGood ? goodSamples + 1 : goodSamples;
+
+    setBatches(prevBatches =>
+      prevBatches.map(batch => {
         if (batch.id !== currentBatch.id) return batch;
-        
-        const samplesReviewed = (batch.samplesReviewed || 0) + 1;
-        const samplesGood = isGood ? (batch.samplesGood || 0) + 1 : (batch.samplesGood || 0);
-        
         return {
           ...batch,
           status: 'summary_review_in_progress',
-          samplesReviewed,
-          samplesGood
+          samplesReviewed: updatedSamplesReviewed,
+          samplesGood: updatedSamplesGood,
+          documents: (batch.documents || sampleDocuments).map(doc =>
+            doc.id === selectedSample.id
+              ? { ...doc, reviewStatus: isGood ? 'sample_good' : 'sample_needs_correction' }
+              : doc
+          )
         };
       })
     );
-    
+
+    setCurrentBatch(prevCurrentBatch => ({
+        ...prevCurrentBatch,
+        status: 'summary_review_in_progress',
+        samplesReviewed: updatedSamplesReviewed,
+        samplesGood: updatedSamplesGood,
+    }));
+
+
     toast({
       title: isGood ? "Sample marked as Good" : "Sample marked for Correction",
-      description: `Sample has been reviewed.`,
+      description: `Sample ${selectedSample.filename || selectedSample.id} has been reviewed.`,
     });
-    
+
     if (selectedSampleIndex < sampleDocuments.length - 1) {
       setSelectedSampleIndex(selectedSampleIndex + 1);
+    } else if (updatedSamplesReviewed >= 10) {
+        setSelectedSampleIndex(null);
     }
   };
 
-  const handleSaveSample = (sampleId, updatedData, wasModified) => {
-    setBatches(prev => 
-      prev.map(batch => {
+  const handleSaveSampleData = (sampleId, updatedData, wasModified) => {
+    setBatches(prevBatches =>
+      prevBatches.map(batch => {
         if (batch.id !== currentBatch.id) return batch;
-        
-        return {
-          ...batch,
-          documents: batch.documents?.map(doc => {
-            if (doc.id !== sampleId) return doc;
-            
-            return {
-              ...doc,
-              summaryMetadata: {
-                ...doc.summaryMetadata,
-                ...updatedData
-              },
-              reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes',
-              isModified: wasModified
-            };
-          }) || []
-        };
+        const updatedDocs = (batch.documents || sampleDocuments).map(doc => {
+          if (doc.id !== sampleId) return doc;
+          return {
+            ...doc,
+            summaryMetadata: {
+              ...(doc.summaryMetadata || {}),
+              ...updatedData
+            },
+            reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes',
+            isModifiedInThisReview: wasModified,
+          };
+        });
+        return { ...batch, documents: updatedDocs };
       })
     );
-    
+
     toast({
-      title: wasModified ? "Sample updated" : "Sample approved",
-      description: `Sample has been ${wasModified ? 'updated and' : ''} saved.`,
+      title: wasModified ? "Sample updated" : "Sample data saved",
+      description: `Sample ${sampleId} has been ${wasModified ? 'updated and' : ''} saved.`,
     });
   };
 
-  const handleApproveAndNext = () => {
-    if (selectedSample) {
-      const originalData = {
-        caseNo: selectedSample.summaryMetadata?.caseNo || selectedSample.basicMetadata?.caseNo || '',
-        caseName: selectedSample.summaryMetadata?.caseName || selectedSample.basicMetadata?.caseName || '',
-        facts: selectedSample.summaryMetadata?.facts || '',
-        summary: selectedSample.summaryMetadata?.summary || ''
-      };
-      
-      handleSaveSample(selectedSample.id, originalData, false);
-      
-      if (selectedSampleIndex < sampleDocuments.length - 1) {
-        setSelectedSampleIndex(selectedSampleIndex + 1);
-      }
-    }
-  };
-
-  const handlePrevious = () => {
+  const handlePreviousSample = () => {
     if (selectedSampleIndex > 0) {
       setSelectedSampleIndex(selectedSampleIndex - 1);
     }
   };
 
-  const handleNext = () => {
+  const handleNextSample = () => {
     if (selectedSampleIndex < sampleDocuments.length - 1) {
       setSelectedSampleIndex(selectedSampleIndex + 1);
     }
   };
-  
+
   if (selectedSample) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <BackButton onClick={() => setSelectedSampleIndex(null)} />
-        
-        <div className="mb-6 flex justify-between items-center">
+
+        <div className="mb-6 flex flex-wrap justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Review Sample Case</h1>
             <p className="text-gray-600 mt-2">
               Reviewing sample {selectedSampleIndex + 1} of {sampleDocuments.length} from batch: {currentBatch.name}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
-              Progress: {reviewedSamples}/10 samples reviewed ({goodSamples} good)
+              Overall Batch Progress: {reviewedSamples}/10 samples reviewed ({goodSamples} good)
             </div>
             {allSamplesReviewed && (
               <Button
                 onClick={handleCompleteReview}
-                className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-lg px-6 py-3"}
+                className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-white text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-white text-lg px-6 py-3"}
               >
-                {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Error Queue'}
+                {goodSamples > 5 ? 'Complete & Move to Indexing' : 'Send to Error Queue'}
               </Button>
             )}
           </div>
         </div>
-        
+
         <FactsSummaryCaseCard
           document={selectedSample}
-          onSave={handleSaveSample}
-          onCancel={() => setSelectedSampleIndex(null)}
+          onSave={handleSaveSampleData}
           onMarkGood={() => handleMarkSample(true)}
           onMarkBad={() => handleMarkSample(false)}
-          onApproveAndNext={handleApproveAndNext}
-          showMarkingButtons={true}
+          showMarkingButtons={!allSamplesReviewed || reviewedSamples < 10 }
         />
-        
+
         <div className="mt-6 flex justify-between items-center">
           <Button
             variant="outline"
-            onClick={handlePrevious}
+            onClick={handlePreviousSample}
             disabled={selectedSampleIndex === 0}
           >
-            Previous
+            Previous Sample
           </Button>
-          
+
           <Button
             variant="outline"
-            onClick={handleNext}
-            disabled={selectedSampleIndex === sampleDocuments.length - 1}
+            onClick={handleNextSample}
+            disabled={
+                selectedSampleIndex === sampleDocuments.length - 1 ||
+                (selectedSample && (!selectedSample.reviewStatus || selectedSample.reviewStatus === 'pending_sample_review')) && reviewedSamples < 10
+            }
           >
-            Next
+            Next Sample
           </Button>
         </div>
       </div>
     );
   }
-  
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <BackButton onClick={() => setCurrentBatch(null)} />
-      
-      <div className="mb-6 flex justify-between items-center">
+
+      <div className="mb-6 flex flex-wrap justify-between items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Facts & Summary Review</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Facts & Summary Sample Review</h1>
           <p className="text-gray-600 mt-2">
-            Review and verify facts and summary data for 10 random samples from batch: {currentBatch.name}
+            Review 10 random samples from batch: <strong>{currentBatch.name}</strong>
           </p>
         </div>
-        
+
         {allSamplesReviewed && (
           <Button
             onClick={handleCompleteReview}
-            className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-lg px-6 py-3"}
+            className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-white text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-white text-lg px-6 py-3"}
           >
             {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Error Queue'}
           </Button>
         )}
       </div>
-      
-      <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium">Sample Review Progress:</span>
-          <span className="text-sm">{reviewedSamples}/10 samples reviewed ({goodSamples} good)</span>
+          <span className="text-sm font-medium text-gray-700">Sample Review Progress:</span>
+          <span className="text-sm text-gray-700">{reviewedSamples}/10 samples reviewed ({goodSamples} good)</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-          <div 
-            className="bg-teal-600 h-2 rounded-full" 
+        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+          <div
+            className="bg-teal-600 h-2.5 rounded-full"
             style={{ width: `${(reviewedSamples / 10) * 100}%` }}
           ></div>
         </div>
-        
+
         {reviewedSamples > 0 && (
           <div className="mt-2 text-sm">
-            {goodSamples > 5 ? (
-              <span className="text-green-600 font-medium">
-                ✓ Batch quality is good ({goodSamples}/{reviewedSamples}). {allSamplesReviewed ? 'Ready for indexing.' : `Need ${10-reviewedSamples} more reviews.`}
-              </span>
-            ) : allSamplesReviewed ? (
-              <span className="text-red-600 font-medium">
-                ⚠ Batch quality is poor ({goodSamples}/10). Requires manual intervention.
-              </span>
+            {allSamplesReviewed ? (
+                goodSamples > 5 ? (
+                <span className="text-green-600 font-medium">
+                    ✓ Batch quality is good ({goodSamples}/10). Ready for final decision.
+                </span>
+                ) : (
+                <span className="text-red-600 font-medium">
+                    ⚠ Batch quality is poor ({goodSamples}/10). Requires manual intervention if finalized.
+                </span>
+                )
             ) : (
-              <span>Review more samples to determine batch quality.</span>
+              <span className="text-gray-600">Review {10 - reviewedSamples} more sample(s) to determine batch quality.</span>
             )}
           </div>
         )}
       </div>
-      
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Sample Document
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <Table className="min-w-full">
+          <TableHeader className="bg-gray-50">
+            <TableRow>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Sample Document ID/Filename
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Case Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Case No
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Facts Available
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Review Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sampleDocuments.map((sample, index) => (
-              <tr key={sample.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{sample.filename}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sample.basicMetadata?.caseName || 'N/A'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sample.basicMetadata?.caseNo || 'N/A'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {sample.summaryMetadata?.facts ? 'Yes' : 'No'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <StatusBadge status={sample.reviewStatus || 'pending'} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedSampleIndex(index)}
-                    className="text-teal-700 hover:text-teal-800"
-                  >
-                    Review Sample
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="bg-white divide-y divide-gray-200">
+            {sampleDocuments.length > 0
+              ? sampleDocuments.map((sample, index) => (
+                  <TableRow key={sample.id} className={selectedSampleIndex === index ? "bg-teal-50" : "hover:bg-gray-50"}>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{sample.filename || sample.id}</div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {sample.basicMetadata?.caseName || 'N/A'}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {sample.basicMetadata?.caseNo || 'N/A'}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {sample.summaryMetadata?.facts ? 'Yes' : 'No'}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={sample.reviewStatus || 'pending_sample_review'} />
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedSampleIndex(index)}
+                        className="text-teal-700 hover:text-teal-800 border-teal-600 hover:bg-teal-50"
+                        disabled={allSamplesReviewed && sample.reviewStatus !== 'pending_sample_review'}
+                      >
+                        Review Sample
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              : <TableRow>
+                  <TableCell colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    No samples found for this batch.
+                  </TableCell>
+                </TableRow>
+            }
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

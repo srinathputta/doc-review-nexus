@@ -12,6 +12,13 @@ export const AppProvider = ({ children }) => {
   const [currentSampleIndex, setCurrentSampleIndex] = useState(0);
   const [batches, setBatches] = useState(mockData.getMockBatches());
 
+  // Create a mock apiService that uses mockData
+  const apiService = {
+    getDocuments: async (batchId) => {
+      return mockData.getMockDocumentsByBatchId(batchId);
+    },
+  };
+
   const uploadBatch = (file) => {
     const newBatch = {
       id: `batch-${Date.now()}`,
@@ -134,7 +141,8 @@ export const AppProvider = ({ children }) => {
       uploadBatch,
       markSample,
       completeBatchReview,
-      sendToSummaryExtraction
+      sendToSummaryExtraction,
+      apiService, // Include apiService in the provided value
     }}>
       {children}
     </AppContext.Provider>

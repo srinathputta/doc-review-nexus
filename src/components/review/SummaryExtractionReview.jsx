@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,20 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BackButton from "@/components/ui/back-button";
 import { flaskApi } from "@/services/flaskApi";
 import { toast } from "@/hooks/use-toast";
-import { Document, SummaryMetadata } from "@/types";
 
-interface SummaryExtractionReviewProps {
-  document: Document;
-  onIndex: (documentId: string, metadata: SummaryMetadata) => void;
-  onBack: () => void;
-}
 
-const SummaryExtractionReview: React.FC<SummaryExtractionReviewProps> = ({
+const SummaryExtractionReview = ({
   document,
   onIndex,
   onBack
 }) => {
-  const [metadata, setMetadata] = useState<SummaryMetadata>({
+  const [metadata, setMetadata] = useState({
     facts: '',
     summary: '',
     citations: ['']
@@ -48,18 +41,19 @@ const SummaryExtractionReview: React.FC<SummaryExtractionReviewProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof SummaryMetadata, value: string) => {
+  const handleInputChange = (field, value) => {
     setMetadata(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleCitationChange = (index: number, value: string) => {
-    setMetadata(prev => ({
-      ...prev,
-      citations: prev.citations.map((citation, i) => i === index ? value : citation)
-    }));
+  const handleCitationChange = (index, value) => {
+    setMetadata(prev => {
+      const newCitations = [...prev.citations];
+      newCitations[index] = value;
+      return { ...prev, citations: newCitations };
+    });
   };
 
   const addCitation = () => {
@@ -69,7 +63,7 @@ const SummaryExtractionReview: React.FC<SummaryExtractionReviewProps> = ({
     }));
   };
 
-  const removeCitation = (index: number) => {
+  const removeCitation = (index) => {
     setMetadata(prev => ({
       ...prev,
       citations: prev.citations.filter((_, i) => i !== index)
@@ -97,77 +91,59 @@ const SummaryExtractionReview: React.FC<SummaryExtractionReviewProps> = ({
     }
   };
 
-  if (loading) {
-    return <div className="p-6">Loading summary extraction data...</div>;
-  }
+ if (loading) {
+   return <div className="p-6">Loading summary extraction data...</div>;
+ }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 space-y-6">
       <BackButton onClick={onBack} />
-      
       <Card>
         <CardHeader>
-          <CardTitle>Summary & Facts Review: {document.filename}</CardTitle>
+          <CardTitle>Review Summary and Facts for {document.filename}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="facts">Facts</Label>
             <Textarea
               id="facts"
               value={metadata.facts}
               onChange={(e) => handleInputChange('facts', e.target.value)}
               rows={6}
-              placeholder="Enter the facts of the case..."
             />
           </div>
-          
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="summary">Summary</Label>
             <Textarea
               id="summary"
               value={metadata.summary}
               onChange={(e) => handleInputChange('summary', e.target.value)}
               rows={6}
-              placeholder="Enter the case summary..."
             />
           </div>
-          
-          <div>
+          <div className="space-y-2">
             <Label>Citations</Label>
-            <div className="space-y-2">
-              {metadata.citations.map((citation, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={citation}
-                    onChange={(e) => handleCitationChange(index, e.target.value)}
-                    placeholder={`Citation ${index + 1}`}
-                  />
-                  {metadata.citations.length > 1 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeCitation(index)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={addCitation}>
-                Add Citation
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex justify-end pt-4">
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="bg-teal-700 hover:bg-teal-800"
-            >
-              {submitting ? "Indexing..." : "Index Document"}
+            {metadata.citations.map((citation, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <Input
+                  value={citation}
+                  onChange={(e) => handleCitationChange(index, e.target.value)}
+                  placeholder={`Citation ${index + 1}`}
+                />
+                {metadata.citations.length > 1 && (
+                  <Button variant="destructive" size="sm" onClick={() => removeCitation(index)}>
+                    Remove
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button onClick={addCitation} variant="outline" size="sm">
+              Add Citation
             </Button>
           </div>
+          <Button onClick={handleSubmit} disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Index Document'}
+          </Button>
         </CardContent>
       </Card>
     </div>

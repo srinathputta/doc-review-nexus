@@ -1,10 +1,6 @@
-// Sample document metadata template
 const createSampleMetadata = (index) => {
-  return {
+ return {
     caseNo: `CASE-${index}-2023`,
-    caseName: `Case ${index} v. State`,
-    court: `Supreme Court of State ${index % 5 + 1}`,
-    caseType: ['Civil', 'Criminal', 'Constitutional', 'Commercial', 'Family'][index % 5],
     date: new Date(2022, index % 12, (index % 28) + 1).toISOString().split('T')[0],
     judges: [`Judge ${index % 10 + 1}`, `Judge ${(index % 10) + 2}`],
     citations: [`Citation ${index}A`, `Citation ${index}B`],
@@ -16,7 +12,7 @@ const createSampleMetadata = (index) => {
     verdict: ['Allowed', 'Dismissed', 'Partly Allowed', 'Reserved'][index % 4],
     facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court.`,
     summary: `Summary of legal proceedings for case ${index}. The court found in favor of the plaintiff on several counts.`
-  };
+ };
 };
 
 const createBasicMetadata = (index) => {
@@ -64,181 +60,29 @@ const createSampleDocuments = (batchId, count, startIndex = 0) => {
   });
 };
 
-// Create sample batches
-export const mockBatches = [
-  // Uploading batch
-  {
-    id: 'batch-1',
-    name: 'Legal Cases Q1 2023',
-    uploadDate: '2023-01-15',
-    totalDocuments: 25,
-    status: 'uploading',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: []
-  },
-  // Unpacking batch
-  {
-    id: 'batch-2',
-    name: 'Legal Cases Q2 2023',
-    uploadDate: '2023-04-02',
-    totalDocuments: 18,
-    status: 'uploaded_to_s3',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: []
-  },
-  // Queued for basic extraction
-  {
-    id: 'batch-3',
-    name: 'Supreme Court Cases 2023',
-    uploadDate: '2023-07-10',
-    totalDocuments: 30,
-    status: 'pending_basic_extraction',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: []
-  },
-  // Basic extraction in progress
-  {
-    id: 'batch-4',
-    name: 'District Court Cases',
-    uploadDate: '2023-09-05',
-    totalDocuments: 15,
-    status: 'basic_extraction_in_progress',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-4', 15)
-  },
-  // Ready for basic review
-  {
-    id: 'batch-5',
-    name: 'Commercial Law Cases',
-    uploadDate: '2023-10-12',
-    totalDocuments: 22,
-    status: 'pending_basic_review',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-5', 22),
-    documentsReviewed: 0
-  },
-  // Basic review in progress
-  {
-    id: 'batch-6',
-    name: 'Corporate Litigation',
-    uploadDate: '2023-11-08',
-    totalDocuments: 28,
-    status: 'basic_review_in_progress',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-6', 28),
-    documentsReviewed: 5
-  },
-  // Ready for F/S extraction
-  {
-    id: 'batch-7',
-    name: 'Property Disputes 2023',
-    uploadDate: '2023-11-15',
-    totalDocuments: 20,
-    status: 'pending_summary_extraction',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-7', 20)
-  },
-  // F/S extraction in progress
-  {
-    id: 'batch-8',
-    name: 'Criminal Appeals',
-    uploadDate: '2023-11-20',
-    totalDocuments: 16,
-    status: 'summary_extraction_in_progress',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-8', 16)
-  },
-  // Ready for F/S review
-  {
-    id: 'batch-9',
-    name: 'Family Court Cases',
-    uploadDate: '2023-11-25',
-    totalDocuments: 18,
-    status: 'pending_summary_review',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-9', 18)
-  },
-  // F/S review in progress
-  {
-    id: 'batch-10',
-    name: 'Tax Law Cases',
-    uploadDate: '2023-11-28',
-    totalDocuments: 14,
-    status: 'summary_review_in_progress',
-    samplesReviewed: 6,
-    samplesGood: 5,
-    documents: createSampleDocuments('batch-10', 14)
-  },
-  // Indexed batch
-  {
-    id: 'batch-11',
-    name: 'Historical Cases Archive',
-    uploadDate: '2023-12-01',
-    totalDocuments: 40,
-    status: 'indexed',
-    samplesReviewed: 10,
-    samplesGood: 8,
-    documents: createSampleDocuments('batch-11', 40)
-  },
-  // Error batches
-  {
-    id: 'batch-12',
-    name: 'Patent Cases 2023',
-    uploadDate: '2023-12-10',
-    totalDocuments: 12,
-    status: 'error',
-    samplesReviewed: 10,
-    samplesGood: 4,
-    documents: createSampleDocuments('batch-12', 12),
-    errorMessage: 'Low quality extraction - requires manual review',
-    errorType: 'quality_threshold_failed'
-  },
-  {
-    id: 'batch-13',
-    name: 'Corporate Law Cases',
-    uploadDate: '2023-12-15',
-    totalDocuments: 0,
-    status: 'error',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: [],
-    errorMessage: 'Failed to unpack ZIP file: Corrupted archive',
-    errorType: 'upload_failed'
-  },
-  {
-    id: 'batch-14',
-    name: 'Constitutional Cases 2023',
-    uploadDate: '2023-12-18',
-    totalDocuments: 25,
-    status: 'error',
-    samplesReviewed: 8,
-    samplesGood: 2,
-    documents: createSampleDocuments('batch-14', 25),
-    errorMessage: 'AI extraction confidence below threshold',
-    errorType: 'extraction_confidence_low'
-  },
-  {
-    id: 'batch-15',
-    name: 'Labour Law Cases',
-    uploadDate: '2023-12-20',
-    totalDocuments: 15,
-    status: 'error',
-    samplesReviewed: 0,
-    samplesGood: 0,
-    documents: createSampleDocuments('batch-15', 15),
-    errorMessage: 'Network timeout during processing',
-    errorType: 'processing_timeout'
-  }
-];
+const getMockDocumentsByBatchIdWithOriginal = (batchId) => {
+  // Find the batch to get the total number of documents
+  const batch = mockBatches.find(b => b.id === batchId);
+  if (!batch) return [];
+
+  return Array.from({ length: batch.totalDocuments }).map((_, i) => {
+    const index = i; // Use index directly for document numbering within the batch
+    const basicMetadata = createBasicMetadata(index);
+    return {
+      id: `doc-${batchId}-${index}`,
+      filename: `document-${index}.pdf`,
+      batchId,
+      status: 'basic_extracted',
+      basicMetadata: basicMetadata, // Current metadata
+      originalBasicMetadata: { ...basicMetadata }, // Copy for original
+      summaryMetadata: createSummaryMetadata(index),
+      pdfUrl: `/sample-pdf.pdf`,
+      reviewStatus: null,
+      isModified: false
+    };
+  });
+};
+
 
 export const getMockBatches = () => {
   return mockBatches;
@@ -321,3 +165,72 @@ export const getSummaryReviewBatches = () => {
     batch => ['pending_summary_review', 'summary_review_in_progress'].includes(batch.status)
   );
 };
+
+const mockBatches = [
+  {
+    id: 'batch-1',
+    name: 'Legal Documents Batch 1',
+    uploadDate: '2023-10-26T10:00:00Z',
+    status: 'indexed',
+    totalDocuments: 50,
+    documents: createSampleDocuments('batch-1', 50, 1),
+  },
+  {
+    id: 'batch-2',
+    name: 'Court Filings Q3 2023',
+    uploadDate: '2023-10-25T11:30:00Z',
+    status: 'error',
+    totalDocuments: 25,
+    documents: createSampleDocuments('batch-2', 25, 51),
+    samplesGood: 20,
+    samplesReviewed: 25,
+  },
+  {
+    id: 'batch-3',
+    name: 'Client Cases August',
+    uploadDate: '2023-10-24T14:00:00Z',
+    status: 'pending_basic_extraction',
+    totalDocuments: 75,
+    documents: createSampleDocuments('batch-3', 75, 76),
+  },
+  {
+    id: 'batch-4',
+    name: 'Partnership Agreements',
+    uploadDate: '2023-10-23T09:15:00Z',
+    status: 'basic_extraction_in_progress',
+    totalDocuments: 30,
+    documents: createSampleDocuments('batch-4', 30, 151),
+  },
+  {
+    id: 'batch-5',
+    name: 'Property Deeds October',
+    uploadDate: '2023-10-22T16:45:00Z',
+    status: 'basic_extracted',
+    totalDocuments: 40,
+    documents: createSampleDocuments('batch-5', 40, 181),
+  },
+  {
+    id: 'batch-6',
+ name: 'IP Law Cases (Basic Review)',
+    uploadDate: '2023-10-21T10:00:00Z',
+ status: 'pending_basic_review', // Changed status
+    totalDocuments: 20,
+    documents: createSampleDocuments('batch-6', 20, 221),
+  },
+   {
+    id: 'batch-7',
+ name: 'Recent Contracts (Basic Review In Progress)',
+    uploadDate: '2023-10-20T11:30:00Z',
+ status: 'basic_review_in_progress', // Changed status
+    totalDocuments: 35,
+    documents: createSampleDocuments('batch-7', 35, 241),
+  },
+ {
+    id: 'batch-8',
+ name: 'Trademark Filings (Summary Review)',
+ uploadDate: '2023-10-19T08:00:00Z',
+ status: 'pending_summary_review', // Added new status
+    totalDocuments: 15,
+ documents: createSampleDocuments('batch-8', 15, 276),
+ },
+];

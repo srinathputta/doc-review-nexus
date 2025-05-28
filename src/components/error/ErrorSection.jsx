@@ -26,7 +26,7 @@ const ErrorSection = () => {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-          <AlertTriangle className="w-8 h-8 text-red-500 mr-3" />
+          <AlertTriangle className="w-8 h-8 text-red-500 mr-3" />Error
           Error Queue - Manual Intervention Required
         </h1>
         <p className="text-gray-600 mt-2">
