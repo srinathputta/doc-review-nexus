@@ -199,7 +199,8 @@ export const mockBatches = [
     samplesReviewed: 10,
     samplesGood: 4,
     documents: createSampleDocuments('batch-12', 12),
-    errorMessage: 'Low quality extraction - requires manual review'
+    errorMessage: 'Low quality extraction - requires manual review',
+    errorType: 'quality_threshold_failed'
   },
   {
     id: 'batch-13',
@@ -210,7 +211,32 @@ export const mockBatches = [
     samplesReviewed: 0,
     samplesGood: 0,
     documents: [],
-    errorMessage: 'Failed to unpack ZIP file: Corrupted archive'
+    errorMessage: 'Failed to unpack ZIP file: Corrupted archive',
+    errorType: 'upload_failed'
+  },
+  {
+    id: 'batch-14',
+    name: 'Constitutional Cases 2023',
+    uploadDate: '2023-12-18',
+    totalDocuments: 25,
+    status: 'error',
+    samplesReviewed: 8,
+    samplesGood: 2,
+    documents: createSampleDocuments('batch-14', 25),
+    errorMessage: 'AI extraction confidence below threshold',
+    errorType: 'extraction_confidence_low'
+  },
+  {
+    id: 'batch-15',
+    name: 'Labour Law Cases',
+    uploadDate: '2023-12-20',
+    totalDocuments: 15,
+    status: 'error',
+    samplesReviewed: 0,
+    samplesGood: 0,
+    documents: createSampleDocuments('batch-15', 15),
+    errorMessage: 'Network timeout during processing',
+    errorType: 'processing_timeout'
   }
 ];
 

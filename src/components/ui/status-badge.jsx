@@ -17,6 +17,9 @@ const statusStyles = {
   indexed: "bg-teal-100 text-teal-800",
   error: "bg-red-100 text-red-800",
   manual_intervention: "bg-red-100 text-red-800",
+  pending: "bg-gray-100 text-gray-800",
+  reviewed_no_changes: "bg-green-100 text-green-800",
+  reviewed_with_modifications: "bg-orange-100 text-orange-800",
 };
 
 const statusLabels = {
@@ -34,7 +37,10 @@ const statusLabels = {
   indexing_in_progress: "Indexing",
   indexed: "Indexed",
   error: "Error",
-  manual_intervention: "Manual Intervention",
+  manual_intervention: "Error",
+  pending: "Pending Review",
+  reviewed_no_changes: "Reviewed (AI Output)",
+  reviewed_with_modifications: "Reviewed (Edited Manually)",
 };
 
 export const StatusBadge = ({ status, className }) => {

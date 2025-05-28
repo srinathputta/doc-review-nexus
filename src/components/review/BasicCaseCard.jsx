@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Save, X, Eye, Check } from "lucide-react";
+import { Edit, Save, X, Eye, Check, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showApproveButton = true }) => {
@@ -59,9 +59,19 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
     }));
   };
 
-  const handleApprove = () => {
+  const handleApproveAndContinue = () => {
     if (onApproveAndNext) {
       onApproveAndNext();
+    }
+  };
+
+  const getReviewStatusBadge = () => {
+    if (document.reviewStatus === 'reviewed_with_modifications') {
+      return <Badge variant="default" className="bg-orange-100 text-orange-800">Reviewed (Edited Manually)</Badge>;
+    } else if (document.reviewStatus === 'reviewed_no_changes') {
+      return <Badge variant="secondary" className="bg-green-100 text-green-800">Reviewed (AI Output)</Badge>;
+    } else {
+      return <Badge variant="outline">Pending Review</Badge>;
     }
   };
 
@@ -73,11 +83,7 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
             <CardTitle className="text-xl">{document.filename}</CardTitle>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{document.status}</Badge>
-              {document.reviewStatus && (
-                <Badge variant={document.reviewStatus === 'reviewed_with_modifications' ? 'default' : 'secondary'}>
-                  {document.reviewStatus === 'reviewed_with_modifications' ? 'Modified' : 'No Changes'}
-                </Badge>
-              )}
+              {getReviewStatusBadge()}
               <span className="text-sm text-gray-500">ID: {document.id}</span>
             </div>
           </div>
@@ -93,9 +99,10 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
                   Edit
                 </Button>
                 {showApproveButton && (
-                  <Button size="sm" onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
+                  <Button size="sm" onClick={handleApproveAndContinue} className="bg-green-600 hover:bg-green-700">
                     <Check className="w-4 h-4 mr-1" />
-                    Approve & Next
+                    Approve & Continue
+                    <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 )}
               </>
@@ -107,7 +114,7 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
                 </Button>
                 <Button size="sm" onClick={handleSave} className="bg-teal-700 hover:bg-teal-800">
                   <Save className="w-4 h-4 mr-1" />
-                  Save
+                  Save Changes
                 </Button>
               </>
             )}
@@ -345,12 +352,22 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
               <Eye size={64} className="mx-auto mb-4 text-gray-400" />
               <h3 className="text-xl font-semibold mb-2">PDF Preview</h3>
               <p className="text-gray-600 mb-4">This is a mock preview of the document. In production, this would show the actual PDF content.</p>
-              <div className="bg-white p-6 rounded border shadow-sm">
-                <h4 className="font-bold text-lg mb-2">{editedData.caseName}</h4>
-                <p className="text-sm text-gray-600 mb-2">Case No: {editedData.caseNo}</p>
-                <p className="text-sm text-gray-600 mb-2">Court: {editedData.court}</p>
-                <p className="text-sm text-gray-600 mb-2">Date: {editedData.date}</p>
-                <p className="text-sm text-gray-600">Judges: {editedData.judges.join(', ')}</p>
+              <div className="bg-white p-6 rounded border shadow-sm text-left">
+                <div className="border-b pb-4 mb-4">
+                  <h4 className="font-bold text-lg text-center mb-2">SUPREME COURT OF INDIA</h4>
+                  <p className="text-sm text-center text-gray-600">Civil Appeal No. {editedData.caseNo}</p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-lg">{editedData.caseName}</h4>
+                  <p className="text-sm"><strong>Court:</strong> {editedData.court}</p>
+                  <p className="text-sm"><strong>Date:</strong> {editedData.date}</p>
+                  <p className="text-sm"><strong>Judges:</strong> {editedData.judges.join(', ')}</p>
+                  <p className="text-sm"><strong>Petitioner:</strong> {editedData.petitioner}</p>
+                  <p className="text-sm"><strong>Respondent:</strong> {editedData.respondent}</p>
+                  <div className="pt-4 border-t">
+                    <p className="text-xs text-gray-500">This is a sample preview showing the structured data extracted from the PDF. The actual implementation would display the full PDF content.</p>
+                  </div>
+                </div>
               </div>
               <p className="text-sm text-gray-500 mt-4">File: {document.filename}</p>
             </div>
