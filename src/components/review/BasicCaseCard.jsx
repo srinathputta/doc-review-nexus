@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Save, X, Eye } from "lucide-react";
+import { Edit, Save, X, Eye, Check } from "lucide-react";
 
-const BasicCaseCard = ({ document, onSave, onCancel }) => {
+const BasicCaseCard = ({ document, onSave, onCancel, showReviewButtons = false }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [originalData, setOriginalData] = useState({
     caseName: document.basicMetadata?.caseName || '',
@@ -50,6 +50,11 @@ const BasicCaseCard = ({ document, onSave, onCancel }) => {
     }));
   };
 
+  const handleApproveNoChanges = () => {
+    onSave(document.id, originalData, false);
+    if (onCancel) onCancel();
+  };
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -76,6 +81,12 @@ const BasicCaseCard = ({ document, onSave, onCancel }) => {
                 <Edit className="w-4 h-4 mr-1" />
                 Edit
               </Button>
+              {showReviewButtons && (
+                <Button size="sm" onClick={handleApproveNoChanges} className="bg-green-600 hover:bg-green-700">
+                  <Check className="w-4 h-4 mr-1" />
+                  Approve
+                </Button>
+              )}
             </>
           ) : (
             <>

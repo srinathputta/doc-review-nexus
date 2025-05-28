@@ -98,6 +98,13 @@ class ApiService {
       body: { isGood },
     });
   }
+  
+  async completeBatchReview(batchId, status) {
+    return this.request(`/batches/${batchId}/complete-review`, {
+      method: 'POST',
+      body: { status },
+    });
+  }
 }
 
 export default new ApiService();

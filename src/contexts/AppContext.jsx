@@ -76,12 +76,12 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  const completeBatchReview = (batchId) => {
+  const completeBatchReview = (batchId, pass = true) => {
     setBatches(prev => 
       prev.map(batch => {
         if (batch.id !== batchId) return batch;
         
-        const newStatus = (batch.samplesGood || 0) > 5 ? 'indexed' : 'error';
+        const newStatus = pass ? 'indexed' : 'error';
         
         toast({
           title: newStatus === 'indexed' ? "Batch approved for indexing" : "Batch flagged for manual intervention",
@@ -99,24 +99,24 @@ export const AppProvider = ({ children }) => {
     setCurrentSample(null);
   };
 
-  const retrySampleReview = (batchId) => {
+  const sendToSummaryExtraction = (batchId) => {
     setBatches(prev => 
       prev.map(batch => {
         if (batch.id !== batchId) return batch;
         
+        toast({
+          title: "Batch sent for Facts & Summary extraction",
+          description: `${batch.name} is now in the Facts & Summary extraction queue.`,
+        });
+        
         return {
           ...batch,
-          status: 'pending_basic_review',
-          samplesReviewed: 0,
-          samplesGood: 0
+          status: 'pending_summary_extraction'
         };
       })
     );
     
-    toast({
-      title: "Sample review reset",
-      description: "The batch is now ready for a new review.",
-    });
+    setCurrentBatch(null);
   };
 
   return (
@@ -134,7 +134,7 @@ export const AppProvider = ({ children }) => {
       uploadBatch,
       markSample,
       completeBatchReview,
-      retrySampleReview
+      sendToSummaryExtraction
     }}>
       {children}
     </AppContext.Provider>

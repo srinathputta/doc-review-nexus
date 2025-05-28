@@ -63,12 +63,10 @@ const EditableCaseCard = ({
 
   const handleMarkGood = () => {
     if (onMarkGood) onMarkGood();
-    if (onCancel) onCancel();
   };
 
   const handleMarkBad = () => {
     if (onMarkBad) onMarkBad();
-    if (onCancel) onCancel();
   };
 
   return (
@@ -212,66 +210,64 @@ const EditableCaseCard = ({
         </div>
 
         {/* Summary Metadata Section */}
-        {(document.summaryMetadata || editedData.facts || editedData.summary) && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Facts & Summary</h3>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="facts">Facts</Label>
-                {isEditing ? (
-                  <Textarea
-                    id="facts"
-                    value={editedData.facts}
-                    onChange={(e) => handleFieldChange('facts', e.target.value)}
-                    className="mt-1"
-                    rows={4}
-                  />
-                ) : (
-                  <div className="mt-1 p-3 bg-gray-50 rounded border min-h-[100px]">
-                    {editedData.facts || 'N/A'}
-                  </div>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="summary">Summary</Label>
-                {isEditing ? (
-                  <Textarea
-                    id="summary"
-                    value={editedData.summary}
-                    onChange={(e) => handleFieldChange('summary', e.target.value)}
-                    className="mt-1"
-                    rows={4}
-                  />
-                ) : (
-                  <div className="mt-1 p-3 bg-gray-50 rounded border min-h-[100px]">
-                    {editedData.summary || 'N/A'}
-                  </div>
-                )}
-              </div>
-              
-              <div>
-                <Label>Citations</Label>
-                {isEditing ? (
-                  <div className="space-y-2 mt-1">
-                    {editedData.citations.map((citation, index) => (
-                      <Input
-                        key={index}
-                        value={citation}
-                        onChange={(e) => handleArrayFieldChange('citations', index, e.target.value)}
-                        placeholder={`Citation ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-1 p-2 bg-gray-50 rounded border">
-                    {editedData.citations.length > 0 ? editedData.citations.join('; ') : 'N/A'}
-                  </div>
-                )}
-              </div>
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Facts & Summary</h3>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="facts">Facts</Label>
+              {isEditing ? (
+                <Textarea
+                  id="facts"
+                  value={editedData.facts}
+                  onChange={(e) => handleFieldChange('facts', e.target.value)}
+                  className="mt-1"
+                  rows={4}
+                />
+              ) : (
+                <div className="mt-1 p-3 bg-gray-50 rounded border min-h-[100px] whitespace-pre-wrap">
+                  {editedData.facts || 'N/A'}
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="summary">Summary</Label>
+              {isEditing ? (
+                <Textarea
+                  id="summary"
+                  value={editedData.summary}
+                  onChange={(e) => handleFieldChange('summary', e.target.value)}
+                  className="mt-1"
+                  rows={4}
+                />
+              ) : (
+                <div className="mt-1 p-3 bg-gray-50 rounded border min-h-[100px] whitespace-pre-wrap">
+                  {editedData.summary || 'N/A'}
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <Label>Citations</Label>
+              {isEditing ? (
+                <div className="space-y-2 mt-1">
+                  {editedData.citations.map((citation, index) => (
+                    <Input
+                      key={index}
+                      value={citation}
+                      onChange={(e) => handleArrayFieldChange('citations', index, e.target.value)}
+                      placeholder={`Citation ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-1 p-2 bg-gray-50 rounded border">
+                  {editedData.citations.length > 0 ? editedData.citations.join('; ') : 'N/A'}
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
         {/* Sample Review Actions */}
         {showMarkingButtons && (
@@ -288,7 +284,7 @@ const EditableCaseCard = ({
               </Button>
               <Button
                 onClick={handleMarkGood}
-                className="bg-teal-700 hover:bg-teal-800"
+                className="bg-green-600 hover:bg-green-700"
               >
                 <Check size={18} className="mr-2" />
                 Mark as Good
