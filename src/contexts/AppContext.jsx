@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, useState } from "react";
 import * as mockData from "../lib/mock-data";
+import { getMockExtractionDocuments } from "@/lib/mock-data";
 import { toast } from "@/hooks/use-toast";
 
 const AppContext = createContext(undefined);
@@ -11,68 +11,72 @@ export const AppProvider = ({ children }) => {
   const [currentSample, setCurrentSample] = useState(null);
   const [currentSampleIndex, setCurrentSampleIndex] = useState(0);
   const [batches, setBatches] = useState(mockData.getMockBatches());
+  const [documentsForExtraction, setDocumentsForExtraction] = useState(getMockExtractionDocuments());
 
-  // Create a mock apiService that uses mockData
   const apiService = {
     getDocuments: async (batchId) => {
       return mockData.getMockDocumentsByBatchId(batchId);
     },
   };
 
-  const uploadBatch = (file) => {
-    const newBatch = {
-      id: `batch-${Date.now()}`,
-      name: file.name.replace(/\.zip$/, ''),
-      uploadDate: new Date().toISOString().split('T')[0],
-      totalDocuments: Math.floor(Math.random() * 30) + 5,
-      status: 'uploading',
-      samplesReviewed: 0,
-      samplesGood: 0,
-      documents: []
-    };
-    
-    setBatches(prev => [newBatch, ...prev]);
-    
-    toast({
-      title: "Batch upload started",
-      description: `Processing ${newBatch.name}...`,
-    });
-    
-    setTimeout(() => {
-      setBatches(prev => 
-        prev.map(b => 
-          b.id === newBatch.id ? { ...b, status: 'uploaded_to_s3' } : b
-        )
-      );
-      
-      setTimeout(() => {
-        setBatches(prev => 
-          prev.map(b => 
-            b.id === newBatch.id ? { ...b, status: 'pending_basic_extraction' } : b
-          )
-        );
-        
+  const uploadBatch = (files) => {
+    const newDocuments = [];
+
+    files.forEach((file) => {
+      if (file.type === "application/zip") {
+        const numDocuments = Math.floor(Math.random() * 5) + 2;
+        for (let i = 0; i < numDocuments; i++) {
+          newDocuments.push({
+            id: `doc-${Date.now()}-${i}`,
+            filename: `${file.name.replace(/\.zip$/, "")}_extracted_doc_${i + 1}.pdf`,
+            status: "pending basic details extraction",
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: "user@example.com",
+          });
+        }
+
         toast({
-          title: "Batch queued for extraction",
-          description: `${newBatch.name} is ready for processing`,
+          title: "ZIP file uploaded",
+          description: `Simulating extraction of ${numDocuments} documents from ${file.name}.`,
         });
-      }, 3000);
-    }, 2000);
+      } else if (file.type === "application/pdf") {
+        newDocuments.push({
+          id: `doc-${Date.now()}`,
+          filename: file.name,
+          status: "pending basic details extraction",
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: "user@example.com",
+        });
+
+        toast({
+          title: "PDF file uploaded",
+          description: `${file.name} added to extraction queue.`,
+        });
+      }
+    });
+
+    // Simulate processing delay
+    setTimeout(() => {
+      setDocumentsForExtraction((prev) => [
+        ...prev,
+        ...newDocuments
+      ]);
+    }, 3000); // 3 seconds delay
   };
 
   const markSample = (batchId, docId, isGood) => {
-    setBatches(prev => 
-      prev.map(batch => {
+    setBatches((prev) =>
+      prev.map((batch) => {
         if (batch.id !== batchId) return batch;
-        
+
         const samplesReviewed = (batch.samplesReviewed || 0) + 1;
         const samplesGood = isGood ? (batch.samplesGood || 0) + 1 : (batch.samplesGood || 0);
-        
+
         return {
           ...batch,
-          status: 'summary_review_in_progress',
+          status: "summary_review_in_progress",
           samplesReviewed,
-          samplesGood
+          samplesGood,
         };
       })
     );
@@ -84,66 +88,70 @@ export const AppProvider = ({ children }) => {
   };
 
   const completeBatchReview = (batchId, pass = true) => {
-    setBatches(prev => 
-      prev.map(batch => {
+    setBatches((prev) =>
+      prev.map((batch) => {
         if (batch.id !== batchId) return batch;
-        
-        const newStatus = pass ? 'indexed' : 'error';
-        
+
+        const newStatus = pass ? "indexed" : "error";
+
         toast({
-          title: newStatus === 'indexed' ? "Batch approved for indexing" : "Batch flagged for manual intervention",
+          title: newStatus === "indexed" ? "Batch approved for indexing" : "Batch flagged for manual intervention",
           description: `${batch.samplesGood || 0} of ${batch.samplesReviewed || 0} samples were marked as good.`,
         });
-        
+
         return {
           ...batch,
-          status: newStatus
+          status: newStatus,
         };
       })
     );
-    
+
     setCurrentBatch(null);
     setCurrentSample(null);
   };
 
   const sendToSummaryExtraction = (batchId) => {
-    setBatches(prev => 
-      prev.map(batch => {
+    setBatches((prev) =>
+      prev.map((batch) => {
         if (batch.id !== batchId) return batch;
-        
+
         toast({
           title: "Batch sent for Facts & Summary extraction",
           description: `${batch.name} is now in the Facts & Summary extraction queue.`,
         });
-        
+
         return {
           ...batch,
-          status: 'pending_summary_extraction'
+          status: "pending_summary_extraction",
         };
       })
     );
-    
+
     setCurrentBatch(null);
   };
 
   return (
-    <AppContext.Provider value={{
-      currentStage,
-      setCurrentStage,
-      currentBatch,
-      setCurrentBatch,
-      currentSample,
-      setCurrentSample,
-      currentSampleIndex,
-      setCurrentSampleIndex,
-      batches,
-      setBatches,
-      uploadBatch,
-      markSample,
-      completeBatchReview,
-      sendToSummaryExtraction,
-      apiService, // Include apiService in the provided value
-    }}>
+    <AppContext.Provider
+      value={{
+        currentStage,
+        setCurrentStage,
+        currentBatch,
+        setCurrentBatch,
+        currentSample,
+        setCurrentSample,
+        currentSampleIndex,
+        setCurrentSampleIndex,
+        batches,
+        setBatches,
+        uploadBatch,
+        documentsForExtraction,
+        setDocumentsForExtraction,
+        markSample,
+        completeBatchReview,
+        sendToSummaryExtraction,
+        apiService,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

@@ -1,129 +1,94 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
+import MockPdfViewer from "@/components/MockPdfViewer";
 import { useNavigate } from "react-router-dom";
-import { getBasicExtractionQueueBatches } from "@/lib/mock-data";
 
 const BasicExtractionQueue = () => {
-  const { setCurrentBatch, setBatches } = useApp();
+  const { documentsForExtraction } = useApp();
   const navigate = useNavigate();
-  
-  const extractionBatches = getBasicExtractionQueueBatches();
 
-  const handleStartExtraction = (batch) => {
-    if (batch.status === 'pending_basic_extraction') {
-      setBatches(prev => 
-        prev.map(b => 
-          b.id === batch.id 
-            ? { ...b, status: 'basic_extraction_in_progress' }
-            : b
-        )
-      );
-      
-      // Simulate extraction completion
-      setTimeout(() => {
-        setBatches(prev => 
-          prev.map(b => 
-            b.id === batch.id 
-              ? { ...b, status: 'pending_basic_review' }
-              : b
-          )
-        );
-      }, 3000);
-    }
-  };
+  const [showMockPdfViewer, setShowMockPdfViewer] = useState(false);
+  const [mockPdfCaseName, setMockPdfCaseName] = useState("");
 
-  const handleViewBatch = (batch) => {
-    setCurrentBatch(batch);
-    navigate('/basic-details-review');
+  const handleViewMockPdf = (document) => {
+    setMockPdfCaseName(document.filename); // Using filename as mock case name
+    setShowMockPdfViewer(true);
   };
 
   return (
     <div className="p-6">
-      <BackButton onClick={() => navigate('/upload')} />
+      <BackButton onClick={() => navigate("/upload")} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Basic Extraction Queue</h1>
         <p className="text-gray-600 mt-2">
           Batches waiting for or undergoing basic metadata extraction.
         </p>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Batch Name
+                Filename
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Upload Date
+                Uploaded At
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total PDFs
+                Uploaded By
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+                View PDF
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {extractionBatches.length > 0 ? (
-              extractionBatches.map((batch) => (
-                <tr key={batch.id}>
+            {documentsForExtraction.length > 0 ? (
+              documentsForExtraction.map((document) => (
+                <tr key={document.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{batch.name}</div>
+                    <div className="text-sm font-medium text-gray-900">{document.filename}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {batch.uploadDate}
+                    {document.uploadedAt}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {batch.totalDocuments}
+                    {document.uploadedBy}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={batch.status} />
+                    <StatusBadge status={document.status} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {batch.status === 'basic_extraction_in_progress' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-teal-700 hover:text-teal-800"
-                          onClick={() => handleViewBatch(batch)}
-                        >
-                          View Progress
-                        </Button>
-                      )}
-                      {batch.status === 'pending_basic_extraction' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-teal-700 hover:text-teal-800"
-                          onClick={() => handleStartExtraction(batch)}
-                        >
-                          Start Extraction
-                        </Button>
-                      )}
-                    </div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <Button size="sm" onClick={() => handleViewMockPdf(document)}>
+                      View PDF
+                    </Button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No batches in extraction queue
+                  No documents in the queue.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      {showMockPdfViewer && (
+        <MockPdfViewer
+          caseName={mockPdfCaseName}
+          onClose={() => setShowMockPdfViewer(false)}
+        />
+      )}
     </div>
   );
 };

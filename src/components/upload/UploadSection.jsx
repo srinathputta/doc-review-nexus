@@ -14,19 +14,28 @@ const UploadSection = () => {
   
   const onDrop = useCallback(
     (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return;
-      
-      const file = acceptedFiles[0];
-      
-      // Check if the file is a ZIP
-      if (!file.name.endsWith('.zip')) {
+      setIsDragging(false);
+      if (acceptedFiles.length > 1) {
         toast({
-          title: "Invalid file format",
-          description: "Please upload a ZIP file containing PDF documents.",
+          title: "Too many files",
+          description: "Please upload only one file at a time (either a single PDF or a single ZIP).",
           variant: "destructive"
         });
         return;
       }
+
+      if (acceptedFiles.length === 0) {
+        // This case is usually handled by useDropzone based on `accept`
+        // but adding a check doesn't hurt.
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF or ZIP file.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const file = acceptedFiles[0];
       
       // Process the file
       uploadBatch(file);
@@ -37,7 +46,10 @@ const UploadSection = () => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
+      'application/pdf': ['.pdf'],
       'application/zip': ['.zip'],
+      // Older versions might use these mime types
+      'application/x-zip-compressed': ['.zip'],
     },
     onDragEnter: () => setIsDragging(true),
     onDragLeave: () => setIsDragging(false),
@@ -50,7 +62,7 @@ const UploadSection = () => {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Upload Documents</h1>
         <p className="text-gray-600 mt-2">
-          Upload a ZIP file containing multiple PDF documents to create a new batch.
+          Upload individual PDF documents or a ZIP file containing multiple PDFs.
         </p>
       </div>
       
@@ -64,11 +76,11 @@ const UploadSection = () => {
           <div className="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center mb-4">
             <Upload className="text-teal-700" size={24} />
           </div>
-          <h3 className="text-lg font-medium mb-2">Drag & drop a ZIP file</h3>
+          <h3 className="text-lg font-medium mb-2">Drag & drop PDF or ZIP files</h3>
           <p className="text-sm text-gray-500 mb-4">
             Or click to select a file from your computer
           </p>
-          <Button variant="outline">Select ZIP file</Button>
+          <Button variant="outline">Select file</Button>
         </div>
       </div>
       

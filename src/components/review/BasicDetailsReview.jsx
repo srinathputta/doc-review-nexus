@@ -86,7 +86,6 @@ const BasicDetailsReviewInterface = () => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [documentToDiffId, setDocumentToDiffId] = useState(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [pdfDocument, setPdfDocument] = useState(null);
   const navigate = useNavigate();
@@ -147,11 +146,6 @@ const BasicDetailsReviewInterface = () => {
       isMounted = false;
     };
   }, [currentBatch?.id]);
-
-  const documentToDiff = useMemo(() => {
-    if (!documentToDiffId) return null;
-    return documents.find(doc => doc.id === documentToDiffId);
-  }, [documentToDiffId, documents]);
 
   const handleViewPdf = (document) => {
     setPdfDocument(document);
@@ -420,24 +414,6 @@ const BasicDetailsReviewInterface = () => {
                     <StatusBadge status={document.reviewStatus || 'pending_basic_review'} />
                   </TableCell>
                   <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    {document.reviewStatus === 'reviewed_manual_edit_approved' && document.originalBasicMetadata && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-700 hover:text-blue-800 border-blue-600 hover:bg-blue-50 px-3 py-1.5 text-xs"
-                        onClick={(e) => { e.stopPropagation(); setDocumentToDiffId(document.id); }}
-                      >
-                        View Diff
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-purple-700 hover:text-purple-800 border-purple-600 hover:bg-purple-50 px-3 py-1.5 text-xs"
-                      onClick={(e) => { e.stopPropagation(); handleViewPdf(document); }}
-                    >
-                      View PDF
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -454,62 +430,6 @@ const BasicDetailsReviewInterface = () => {
           </TableBody>
         </Table>
       </div>
-
-      {/* Diff Viewer Dialog */}
-      {documentToDiff && (
-        <Dialog open={!!documentToDiffId} onOpenChange={(open) => !open && setDocumentToDiffId(null)}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Metadata Comparison</DialogTitle>
-              <DialogDescription>
-                Comparing original AI extraction with manual edits for {documentToDiff.filename || documentToDiff.id}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Field</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original Value</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edited Value</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.keys({
-                      ...documentToDiff.originalBasicMetadata,
-                      ...documentToDiff.basicMetadata
-                    }).map((key) => (
-                      <tr key={key} className={
-                        JSON.stringify(documentToDiff.originalBasicMetadata?.[key]) !== 
-                        JSON.stringify(documentToDiff.basicMetadata?.[key]) 
-                          ? "bg-yellow-50" 
-                          : ""
-                      }>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{key}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {documentToDiff.originalBasicMetadata?.[key] ? 
-                            (typeof documentToDiff.originalBasicMetadata[key] === 'object' 
-                              ? JSON.stringify(documentToDiff.originalBasicMetadata[key], null, 2)
-                              : String(documentToDiff.originalBasicMetadata[key]))
-                            : 'N/A'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {documentToDiff.basicMetadata?.[key] ? 
-                            (typeof documentToDiff.basicMetadata[key] === 'object' 
-                              ? JSON.stringify(documentToDiff.basicMetadata[key], null, 2)
-                              : String(documentToDiff.basicMetadata[key]))
-                            : 'N/A'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
 
       {/* PDF Viewer Dialog */}
       <Dialog key={pdfDocument?.id || 'pdf-viewer'} open={showPdfModal} onOpenChange={setShowPdfModal}>

@@ -161,9 +161,28 @@ export const getSummaryExtractionQueueBatches = () => {
 };
 
 export const getSummaryReviewBatches = () => {
-  return mockBatches.filter(
-    batch => ['pending_summary_review', 'summary_review_in_progress'].includes(batch.status)
-  );
+  // This function is now deprecated as we are using individual documents for extraction queue
+  return [];
+};
+
+export const getMockExtractionDocuments = () => {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: 'doc-mock-1',
+      filename: 'example-case-brief.pdf',
+      status: 'pending basic details extraction',
+      uploadedAt: now,
+      uploadedBy: 'user@example.com',
+    },
+    {
+      id: 'doc-mock-2',
+      filename: 'sample-contract.pdf',
+      status: 'extraction completed pending review',
+      uploadedAt: now,
+      uploadedBy: 'user@example.com',
+    },
+  ];
 };
 
 const mockBatches = [
