@@ -1,112 +1,77 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useApp } from "@/contexts/AppContext";
-import { getReviewReadyBatches } from "@/lib/mock-data";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import BackButton from "@/components/ui/back-button";
-import SampleReviewInterface from "./SampleReviewInterface";
-import { useNavigate } from "react-router-dom";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import SampleReviewInterface from './SampleReviewInterface';
 
 const BatchReviewSection = () => {
-  const { currentBatch, setCurrentBatch } = useApp();
-  const reviewReadyBatches = getReviewReadyBatches();
-  const navigate = useNavigate();
-  
-  // If a batch is selected, show the sample review interface
-  if (currentBatch) {
-    return <SampleReviewInterface />;
+  const { currentBatch, setCurrentBatch, batches, setBatches } = useApp();
+  const [showSampleReview, setShowSampleReview] = useState(false);
+
+  const handleStartReview = () => {
+    // Logic to start the review process
+    console.log("Starting review for batch:", currentBatch);
+    // Placeholder for starting review
+  };
+
+  const handleSendToNext = () => {
+    // Logic to send the batch to the next stage
+    console.log("Sending batch to next stage:", currentBatch);
+    // Placeholder for sending to next stage
+  };
+
+  const handleCancel = () => {
+    setCurrentBatch(null);
+  };
+
+  if (showSampleReview) {
+    return <SampleReviewInterface onBack={() => setShowSampleReview(false)} />;
   }
-  
+
   return (
     <div className="p-6">
-      <BackButton onClick={() => navigate('/')} />
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Batch Review</h1>
-        <p className="text-gray-600 mt-2">
-          Review extracted samples to evaluate data quality before indexing.
-        </p>
+      <h2 className="text-xl font-semibold mb-4">Batch Review: {currentBatch?.name}</h2>
+      <div className="mb-4">
+        <StatusBadge status={currentBatch?.status || 'pending'} />
       </div>
-      
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Batch Name/ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date Extracted
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total Documents
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reviewed
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {reviewReadyBatches.length > 0 ? (
-              reviewReadyBatches.map((batch) => (
-                <BatchRow
-                  key={batch.id}
-                  batch={batch}
-                  onSelect={() => setCurrentBatch(batch)}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No batches ready for review
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mb-4">
+        <p>Batch ID: {currentBatch?.id}</p>
+        <p>Total Documents: {currentBatch?.totalDocuments}</p>
+        <p>Documents Reviewed: {currentBatch?.documentsReviewed || 0}</p>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Document Name</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {currentBatch?.documents?.map((doc) => (
+            <TableRow key={doc.id}>
+              <TableCell>{doc.filename}</TableCell>
+              <TableCell><StatusBadge status={doc.status || 'pending'} /></TableCell>
+              <TableCell>
+                <Button variant="outline" size="sm">Review</Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="mt-6 flex justify-end gap-2">
+        <Button onClick={handleCancel} variant="ghost">
+          Cancel
+        </Button>
+        <Button onClick={handleStartReview} variant="outline">
+          Start Review
+        </Button>
+        <Button onClick={handleSendToNext}>
+          Send to Next Stage
+        </Button>
       </div>
     </div>
-  );
-};
-
-// Batch review row component
-const BatchRow = ({ batch, onSelect }) => {
-  return (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">{batch.name}</div>
-        <div className="text-sm text-gray-500">{batch.id}</div>
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {batch.uploadDate}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {batch.totalDocuments}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <StatusBadge status={batch.status} />
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {batch.samplesReviewed || 0} / 10{" "}
-        {batch.samplesReviewed && batch.samplesReviewed > 0 && `(${batch.samplesGood || 0} Good)`}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-teal-700 hover:text-teal-800"
-          onClick={onSelect}
-        >
-          {batch.samplesReviewed && batch.samplesReviewed > 0 ? "Continue Review" : "Start Review"}
-        </Button>
-      </td>
-    </tr>
   );
 };
 
