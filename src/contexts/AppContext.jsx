@@ -13,6 +13,126 @@ export const useApp = () => {
   return context;
 };
 
+// Create some sample extraction batches
+const createSampleExtractionBatches = () => {
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+
+  return [
+    {
+      id: 'extraction-batch-1',
+      name: 'Contract Documents Set A',
+      uploadedAt: yesterday.toISOString(),
+      uploadedBy: 'john.doe@company.com',
+      totalDocuments: 3,
+      status: 'pending_basic_extraction',
+      documents: [
+        {
+          id: 'doc-ext-1',
+          filename: 'employment_contract_2023.pdf',
+          status: 'pending_basic_extraction',
+          uploadedAt: yesterday.toISOString(),
+          uploadedBy: 'john.doe@company.com',
+          batchId: 'extraction-batch-1',
+        },
+        {
+          id: 'doc-ext-2',
+          filename: 'service_agreement_draft.pdf',
+          status: 'basic_extraction_in_progress',
+          uploadedAt: yesterday.toISOString(),
+          uploadedBy: 'john.doe@company.com',
+          batchId: 'extraction-batch-1',
+        },
+        {
+          id: 'doc-ext-3',
+          filename: 'vendor_contract_v2.pdf',
+          status: 'pending_basic_extraction',
+          uploadedAt: yesterday.toISOString(),
+          uploadedBy: 'john.doe@company.com',
+          batchId: 'extraction-batch-1',
+        }
+      ]
+    },
+    {
+      id: 'extraction-batch-2',
+      name: 'Legal Briefs Collection',
+      uploadedAt: twoDaysAgo.toISOString(),
+      uploadedBy: 'sarah.wilson@lawfirm.com',
+      totalDocuments: 5,
+      status: 'basic_extraction_in_progress',
+      documents: [
+        {
+          id: 'doc-ext-4',
+          filename: 'case_brief_smith_v_jones.pdf',
+          status: 'basic_extraction_in_progress',
+          uploadedAt: twoDaysAgo.toISOString(),
+          uploadedBy: 'sarah.wilson@lawfirm.com',
+          batchId: 'extraction-batch-2',
+        },
+        {
+          id: 'doc-ext-5',
+          filename: 'motion_to_dismiss.pdf',
+          status: 'basic_extracted',
+          uploadedAt: twoDaysAgo.toISOString(),
+          uploadedBy: 'sarah.wilson@lawfirm.com',
+          batchId: 'extraction-batch-2',
+        },
+        {
+          id: 'doc-ext-6',
+          filename: 'evidence_summary.pdf',
+          status: 'basic_extraction_in_progress',
+          uploadedAt: twoDaysAgo.toISOString(),
+          uploadedBy: 'sarah.wilson@lawfirm.com',
+          batchId: 'extraction-batch-2',
+        },
+        {
+          id: 'doc-ext-7',
+          filename: 'witness_testimony.pdf',
+          status: 'pending_basic_extraction',
+          uploadedAt: twoDaysAgo.toISOString(),
+          uploadedBy: 'sarah.wilson@lawfirm.com',
+          batchId: 'extraction-batch-2',
+        },
+        {
+          id: 'doc-ext-8',
+          filename: 'expert_report.pdf',
+          status: 'basic_extracted',
+          uploadedAt: twoDaysAgo.toISOString(),
+          uploadedBy: 'sarah.wilson@lawfirm.com',
+          batchId: 'extraction-batch-2',
+        }
+      ]
+    },
+    {
+      id: 'extraction-batch-3',
+      name: 'Patent Applications Batch',
+      uploadedAt: now.toISOString(),
+      uploadedBy: 'mike.tech@patents.com',
+      totalDocuments: 2,
+      status: 'pending_basic_extraction',
+      documents: [
+        {
+          id: 'doc-ext-9',
+          filename: 'software_patent_app.pdf',
+          status: 'pending_basic_extraction',
+          uploadedAt: now.toISOString(),
+          uploadedBy: 'mike.tech@patents.com',
+          batchId: 'extraction-batch-3',
+        },
+        {
+          id: 'doc-ext-10',
+          filename: 'hardware_design_patent.pdf',
+          status: 'pending_basic_extraction',
+          uploadedAt: now.toISOString(),
+          uploadedBy: 'mike.tech@patents.com',
+          batchId: 'extraction-batch-3',
+        }
+      ]
+    }
+  ];
+};
+
 export const AppProvider = ({ children }) => {
   const [currentStage, setCurrentStage] = useState("upload");
   const [currentBatch, setCurrentBatch] = useState(null);
@@ -20,7 +140,7 @@ export const AppProvider = ({ children }) => {
   const [currentSampleIndex, setCurrentSampleIndex] = useState(0);
   const [batches, setBatches] = useState(mockData.getMockBatches());
   const [documentsForExtraction, setDocumentsForExtraction] = useState(getMockExtractionDocuments());
-  const [extractionBatches, setExtractionBatches] = useState([]);
+  const [extractionBatches, setExtractionBatches] = useState(createSampleExtractionBatches());
 
   const apiService = {
     getDocuments: async (batchId) => {
