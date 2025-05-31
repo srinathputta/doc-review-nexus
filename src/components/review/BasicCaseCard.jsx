@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Save, X, Eye, Check, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import MockPdfViewer from "@/components/MockPdfViewer";
 
 const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showApproveButton = true }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [showMockPdfViewer, setShowMockPdfViewer] = useState(false);
   const [originalData, setOriginalData] = useState({
     caseNo: document.basicMetadata?.caseNo || '',
     caseName: document.basicMetadata?.caseName || '',
@@ -65,6 +64,10 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
     }
   };
 
+  const handleViewPdf = () => {
+    setShowMockPdfViewer(true);
+  };
+
   const getReviewStatusBadge = () => {
     if (document.reviewStatus === 'reviewed_with_modifications') {
       return <Badge variant="default" className="bg-orange-100 text-orange-800">Reviewed (Edited Manually)</Badge>;
@@ -90,7 +93,7 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
           <div className="flex gap-2">
             {!isEditing ? (
               <>
-                <Button variant="outline" size="sm" onClick={() => setPdfModalOpen(true)}>
+                <Button variant="outline" size="sm" onClick={handleViewPdf}>
                   <Eye className="w-4 h-4 mr-1" />
                   View PDF
                 </Button>
@@ -342,38 +345,13 @@ const BasicCaseCard = ({ document, onSave, onCancel, onApproveAndNext, showAppro
         </CardContent>
       </Card>
 
-      <Dialog open={pdfModalOpen} onOpenChange={setPdfModalOpen}>
-        <DialogContent className="max-w-4xl w-full">
-          <DialogHeader>
-            <DialogTitle>Document Preview: {document.filename}</DialogTitle>
-          </DialogHeader>
-          <div className="bg-gray-100 p-8 rounded-md h-[70vh] flex flex-col items-center justify-center">
-            <div className="text-center max-w-2xl">
-              <Eye size={64} className="mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-semibold mb-2">PDF Preview</h3>
-              <p className="text-gray-600 mb-4">This is a mock preview of the document. In production, this would show the actual PDF content.</p>
-              <div className="bg-white p-6 rounded border shadow-sm text-left">
-                <div className="border-b pb-4 mb-4">
-                  <h4 className="font-bold text-lg text-center mb-2">SUPREME COURT OF INDIA</h4>
-                  <p className="text-sm text-center text-gray-600">Civil Appeal No. {editedData.caseNo}</p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-lg">{editedData.caseName}</h4>
-                  <p className="text-sm"><strong>Court:</strong> {editedData.court}</p>
-                  <p className="text-sm"><strong>Date:</strong> {editedData.date}</p>
-                  <p className="text-sm"><strong>Judges:</strong> {editedData.judges.join(', ')}</p>
-                  <p className="text-sm"><strong>Petitioner:</strong> {editedData.petitioner}</p>
-                  <p className="text-sm"><strong>Respondent:</strong> {editedData.respondent}</p>
-                  <div className="pt-4 border-t">
-                    <p className="text-xs text-gray-500">This is a sample preview showing the structured data extracted from the PDF. The actual implementation would display the full PDF content.</p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-500 mt-4">File: {document.filename}</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* PDF Viewer */}
+      {showMockPdfViewer && (
+        <MockPdfViewer
+          caseName={document.filename}
+          onClose={() => setShowMockPdfViewer(false)}
+        />
+      )}
     </>
   );
 };
