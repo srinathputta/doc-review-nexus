@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from "react";
 import * as mockData from "../lib/mock-data";
 import { getMockExtractionDocuments } from "@/lib/mock-data";
@@ -12,6 +13,7 @@ export const AppProvider = ({ children }) => {
   const [currentSampleIndex, setCurrentSampleIndex] = useState(0);
   const [batches, setBatches] = useState(mockData.getMockBatches());
   const [documentsForExtraction, setDocumentsForExtraction] = useState(getMockExtractionDocuments());
+  const [extractionBatches, setExtractionBatches] = useState([]);
 
   const apiService = {
     getDocuments: async (batchId) => {
@@ -20,18 +22,22 @@ export const AppProvider = ({ children }) => {
   };
 
   const uploadBatch = (files) => {
+    const batchId = `batch-${Date.now()}`;
     const newDocuments = [];
+    let batchName = '';
 
     files.forEach((file) => {
       if (file.type === "application/zip") {
+        batchName = file.name.replace(/\.zip$/, "");
         const numDocuments = Math.floor(Math.random() * 5) + 2;
         for (let i = 0; i < numDocuments; i++) {
           newDocuments.push({
             id: `doc-${Date.now()}-${i}`,
             filename: `${file.name.replace(/\.zip$/, "")}_extracted_doc_${i + 1}.pdf`,
-            status: "pending basic details extraction",
+            status: "pending_basic_extraction",
             uploadedAt: new Date().toISOString(),
             uploadedBy: "user@example.com",
+            batchId: batchId,
           });
         }
 
@@ -40,12 +46,14 @@ export const AppProvider = ({ children }) => {
           description: `Simulating extraction of ${numDocuments} documents from ${file.name}.`,
         });
       } else if (file.type === "application/pdf") {
+        batchName = file.name.replace(/\.pdf$/, "");
         newDocuments.push({
           id: `doc-${Date.now()}`,
           filename: file.name,
-          status: "pending basic details extraction",
+          status: "pending_basic_extraction",
           uploadedAt: new Date().toISOString(),
           uploadedBy: "user@example.com",
+          batchId: batchId,
         });
 
         toast({
@@ -55,11 +63,27 @@ export const AppProvider = ({ children }) => {
       }
     });
 
+    // Create a new batch for extraction
+    const newBatch = {
+      id: batchId,
+      name: batchName,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: "user@example.com",
+      totalDocuments: newDocuments.length,
+      status: "pending_basic_extraction",
+      documents: newDocuments,
+    };
+
     // Simulate processing delay
     setTimeout(() => {
       setDocumentsForExtraction((prev) => [
         ...prev,
         ...newDocuments
+      ]);
+      
+      setExtractionBatches((prev) => [
+        ...prev,
+        newBatch
       ]);
     }, 3000); // 3 seconds delay
   };
@@ -146,6 +170,8 @@ export const AppProvider = ({ children }) => {
         uploadBatch,
         documentsForExtraction,
         setDocumentsForExtraction,
+        extractionBatches,
+        setExtractionBatches,
         markSample,
         completeBatchReview,
         sendToSummaryExtraction,

@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 const UploadSection = () => {
-  const { uploadBatch, batches } = useApp();
+  const { uploadBatch, batches, extractionBatches } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   
   const onDrop = useCallback(
@@ -25,8 +25,6 @@ const UploadSection = () => {
       }
 
       if (acceptedFiles.length === 0) {
-        // This case is usually handled by useDropzone based on `accept`
-        // but adding a check doesn't hurt.
         toast({
           title: "Invalid file type",
           description: "Please upload a PDF or ZIP file.",
@@ -38,7 +36,7 @@ const UploadSection = () => {
       const file = acceptedFiles[0];
       
       // Process the file
-      uploadBatch(file);
+      uploadBatch([file]);
     },
     [uploadBatch]
   );
@@ -48,13 +46,15 @@ const UploadSection = () => {
     accept: {
       'application/pdf': ['.pdf'],
       'application/zip': ['.zip'],
-      // Older versions might use these mime types
       'application/x-zip-compressed': ['.zip'],
     },
     onDragEnter: () => setIsDragging(true),
     onDragLeave: () => setIsDragging(false),
     maxFiles: 1,
   });
+
+  // Combine all batches for display
+  const allBatches = [...batches, ...extractionBatches];
   
   return (
     <div className="p-6">
@@ -105,14 +105,14 @@ const UploadSection = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {batches.slice(0, 5).map((batch) => (
+              {allBatches.slice(0, 5).map((batch) => (
                 <tr key={batch.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{batch.name}</div>
                     <div className="text-sm text-gray-500">{batch.id}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {batch.uploadDate}
+                    {batch.uploadDate || new Date(batch.uploadedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {batch.totalDocuments}
@@ -122,7 +122,7 @@ const UploadSection = () => {
                   </td>
                 </tr>
               ))}
-              {batches.length === 0 && (
+              {allBatches.length === 0 && (
                 <tr>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" colSpan={4}>
                     No recent batches

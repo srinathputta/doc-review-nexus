@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -9,7 +10,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@
 import BasicCaseCard from "./BasicCaseCard";
 import { toast, useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Send, Eye } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import MockPdfViewer from "@/components/MockPdfViewer";
 
 const BasicDetailsReview = () => {
   const { currentBatch, setCurrentBatch } = useApp();
@@ -86,7 +87,7 @@ const BasicDetailsReviewInterface = () => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [pdfDocument, setPdfDocument] = useState(null);
   const navigate = useNavigate();
 
@@ -149,7 +150,7 @@ const BasicDetailsReviewInterface = () => {
 
   const handleViewPdf = (document) => {
     setPdfDocument(document);
-    setShowPdfModal(true);
+    setShowPdfViewer(true);
   };
 
   const selectedDocument = (selectedDocumentIndex !== null && documents[selectedDocumentIndex])
@@ -431,39 +432,13 @@ const BasicDetailsReviewInterface = () => {
         </Table>
       </div>
 
-      {/* PDF Viewer Dialog */}
-      <Dialog key={pdfDocument?.id || 'pdf-viewer'} open={showPdfModal} onOpenChange={setShowPdfModal}>
-        <DialogContent className="max-w-4xl w-full">
-          <DialogHeader>
-            <DialogTitle>Document Preview: {pdfDocument?.filename}</DialogTitle>
-          </DialogHeader>
-          <div className="bg-gray-100 p-8 rounded-md h-[70vh] flex flex-col items-center justify-center">
-            <div className="text-center max-w-2xl">
-              <Eye size={64} className="mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-semibold mb-2">PDF Preview</h3>
-              <p className="text-gray-600 mb-4">This is a mock preview of the document. In production, this would show the actual PDF content.</p>
-              <div className="bg-white p-6 rounded border shadow-sm text-left">
-                <div className="border-b pb-4 mb-4">
-                  <h4 className="font-bold text-lg text-center mb-2">SUPREME COURT OF INDIA</h4>
-                  <p className="text-sm text-center text-gray-600">Civil Appeal No. {pdfDocument?.basicMetadata?.caseNo}</p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-lg">{pdfDocument?.basicMetadata?.caseName}</h4>
-                  <p className="text-sm"><strong>Court:</strong> {pdfDocument?.basicMetadata?.court}</p>
-                  <p className="text-sm"><strong>Date:</strong> {pdfDocument?.basicMetadata?.date}</p>
-                  <p className="text-sm"><strong>Judges:</strong> {pdfDocument?.basicMetadata?.judges?.join(', ')}</p>
-                  <p className="text-sm"><strong>Petitioner:</strong> {pdfDocument?.basicMetadata?.petitioner}</p>
-                  <p className="text-sm"><strong>Respondent:</strong> {pdfDocument?.basicMetadata?.respondent}</p>
-                  <div className="pt-4 border-t">
-                    <p className="text-xs text-gray-500">This is a sample preview showing the structured data extracted from the PDF. The actual implementation would display the full PDF content.</p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-500 mt-4">File: {pdfDocument?.filename}</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* PDF Viewer */}
+      {showPdfViewer && pdfDocument && (
+        <MockPdfViewer
+          caseName={pdfDocument.filename}
+          onClose={() => setShowPdfViewer(false)}
+        />
+      )}
     </div>
   );
 };
