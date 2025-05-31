@@ -1,10 +1,17 @@
-
 import React, { createContext, useContext, useState } from "react";
 import * as mockData from "../lib/mock-data";
 import { getMockExtractionDocuments } from "@/lib/mock-data";
 import { toast } from "@/hooks/use-toast";
 
 const AppContext = createContext(undefined);
+
+export const useApp = () => {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error("useApp must be used within an AppProvider");
+  }
+  return context;
+};
 
 export const AppProvider = ({ children }) => {
   const [currentStage, setCurrentStage] = useState("upload");
@@ -63,7 +70,6 @@ export const AppProvider = ({ children }) => {
       }
     });
 
-    // Create a new batch for extraction
     const newBatch = {
       id: batchId,
       name: batchName,
@@ -74,7 +80,6 @@ export const AppProvider = ({ children }) => {
       documents: newDocuments,
     };
 
-    // Simulate processing delay
     setTimeout(() => {
       setDocumentsForExtraction((prev) => [
         ...prev,
@@ -85,7 +90,7 @@ export const AppProvider = ({ children }) => {
         ...prev,
         newBatch
       ]);
-    }, 3000); // 3 seconds delay
+    }, 3000);
   };
 
   const markSample = (batchId, docId, isGood) => {
@@ -181,12 +186,4 @@ export const AppProvider = ({ children }) => {
       {children}
     </AppContext.Provider>
   );
-};
-
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error("useApp must be used within an AppProvider");
-  }
-  return context;
 };
