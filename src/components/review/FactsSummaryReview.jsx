@@ -1,22 +1,21 @@
 import React, { useState, useMemo } from "react";
-import { useApp } from "@/contexts/AppContext";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
-import { getSummaryReviewBatches, getMockSamplesByBatchId } from "@/lib/mock-data";
+import { getFactsSummaryReviewBatches, getFactsSummaryBatchById, getMockSamplesByBatchId } from "@/lib/mock-data";
 import FactsSummaryCaseCard from "./FactsSummaryCaseCard";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../ui/table";
 import { toast } from "@/hooks/use-toast";
 
 const FactsSummaryReview = () => {
-  const { currentBatch, setCurrentBatch } = useApp();
+  const [currentBatch, setCurrentBatch] = useState(null);
   const navigate = useNavigate();
 
-  const reviewReadyBatches = useMemo(() => getSummaryReviewBatches(), []);
+  const reviewReadyBatches = useMemo(() => getFactsSummaryReviewBatches(), []);
 
   if (currentBatch) {
-    return <FactsSummaryReviewInterface />;
+    return <FactsSummaryReviewInterface currentBatch={currentBatch} setCurrentBatch={setCurrentBatch} />;
   }
 
   return (
@@ -100,9 +99,9 @@ const FactsSummaryReview = () => {
   );
 };
 
-const FactsSummaryReviewInterface = () => {
-  const { currentBatch, setCurrentBatch, batches, setBatches, setCurrentStage } = useApp();
+const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
   const [selectedSampleIndex, setSelectedSampleIndex] = useState(null);
+  const [batchState, setBatchState] = useState(currentBatch);
   const navigate = useNavigate();
 
   if (!currentBatch) return null;
@@ -112,34 +111,31 @@ const FactsSummaryReviewInterface = () => {
   }, [currentBatch.id]);
 
   const selectedSample = (selectedSampleIndex !== null && sampleDocuments[selectedSampleIndex]) ? sampleDocuments[selectedSampleIndex] : null;
-  const reviewedSamples = currentBatch.samplesReviewed || 0;
-  const goodSamples = currentBatch.samplesGood || 0;
+  const reviewedSamples = batchState.samplesReviewed || 0;
+  const goodSamples = batchState.samplesGood || 0;
   const allSamplesReviewed = reviewedSamples >= 10;
 
   const handleCompleteReview = () => {
     const newStatus = goodSamples > 5 ? 'indexed' : 'error_summary_review';
 
-    setBatches(prevBatches =>
-      prevBatches.map(batch =>
-        batch.id === currentBatch.id
-          ? { ...batch, status: newStatus, samplesReviewed, samplesGood }
-          : batch
-      )
-    );
+    setBatchState(prev => ({ ...prev, status: newStatus }));
     setCurrentBatch(null);
 
     if (newStatus === 'indexed') {
-      setCurrentStage('indexed');
       navigate('/indexed');
+      toast({
+        title: "Batch approved for indexing",
+        description: `${goodSamples} of 10 samples were marked as good. Batch sent to indexing.`,
+        className: "bg-green-50 border-green-200 text-green-800"
+      });
     } else {
-      setCurrentStage('intervention');
       navigate('/intervention');
+      toast({
+        title: "Batch flagged for manual intervention",
+        description: `Only ${goodSamples} of 10 samples were marked as good. Manual review required.`,
+        className: "bg-red-50 border-red-200 text-red-800"
+      });
     }
-
-    toast({
-      title: newStatus === 'indexed' ? "Batch approved for indexing" : "Batch flagged for manual intervention",
-      description: `${goodSamples} of 10 samples were marked as good.`,
-    });
   };
 
   const handleMarkSample = (isGood) => {
@@ -148,79 +144,42 @@ const FactsSummaryReviewInterface = () => {
     const updatedSamplesReviewed = reviewedSamples + 1;
     const updatedSamplesGood = isGood ? goodSamples + 1 : goodSamples;
 
-    setBatches(prevBatches =>
-      prevBatches.map(batch => {
-        if (batch.id !== currentBatch.id) return batch;
-        return {
-          ...batch,
-          status: 'summary_review_in_progress',
-          samplesReviewed: updatedSamplesReviewed,
-          samplesGood: updatedSamplesGood,
-          documents: (batch.documents || sampleDocuments).map(doc =>
-            doc.id === selectedSample.id
-              ? { ...doc, reviewStatus: isGood ? 'sample_good' : 'sample_needs_correction' }
-              : doc
-          )
-        };
-      })
-    );
-
-    setCurrentBatch(prevCurrentBatch => ({
-        ...prevCurrentBatch,
-        status: 'summary_review_in_progress',
-        samplesReviewed: updatedSamplesReviewed,
-        samplesGood: updatedSamplesGood,
+    setBatchState(prev => ({
+      ...prev,
+      status: 'summary_review_in_progress',
+      samplesReviewed: updatedSamplesReviewed,
+      samplesGood: updatedSamplesGood,
     }));
-
 
     toast({
       title: isGood ? "Sample marked as Good" : "Sample marked for Correction",
       description: `Sample ${selectedSample.filename || selectedSample.id} has been reviewed.`,
+      className: isGood ? "bg-green-50 border-green-200 text-green-800" : "bg-orange-50 border-orange-200 text-orange-800"
     });
 
     if (selectedSampleIndex < sampleDocuments.length - 1) {
       setSelectedSampleIndex(selectedSampleIndex + 1);
     } else if (updatedSamplesReviewed >= 10) {
-        setSelectedSampleIndex(null);
+      setSelectedSampleIndex(null);
     }
   };
 
   const handleSaveSampleData = (sampleId, updatedData, wasModified) => {
-    setBatches(prevBatches =>
-      prevBatches.map(batch => {
-        if (batch.id !== currentBatch.id) return batch;
-        const updatedDocs = (batch.documents || sampleDocuments).map(doc => {
-          if (doc.id !== sampleId) return doc;
-          return {
-            ...doc,
-            summaryMetadata: {
-              ...(doc.summaryMetadata || {}),
-              ...updatedData
-            },
-            reviewStatus: wasModified ? 'reviewed_with_modifications' : 'reviewed_no_changes',
-            isModifiedInThisReview: wasModified,
-          };
-        });
-        return { ...batch, documents: updatedDocs };
-      })
-    );
-
     toast({
       title: wasModified ? "Sample updated" : "Sample data saved",
       description: `Sample ${sampleId} has been ${wasModified ? 'updated and' : ''} saved.`,
+      className: "bg-blue-50 border-blue-200 text-blue-800"
     });
   };
 
-  const handlePreviousSample = () => {
-    if (selectedSampleIndex > 0) {
-      setSelectedSampleIndex(selectedSampleIndex - 1);
-    }
-  };
-
-  const handleNextSample = () => {
-    if (selectedSampleIndex < sampleDocuments.length - 1) {
-      setSelectedSampleIndex(selectedSampleIndex + 1);
-    }
+  const handleSendToIndexing = () => {
+    setCurrentBatch(null);
+    navigate('/indexed');
+    toast({
+      title: "Batch sent to indexing",
+      description: `${currentBatch.name} has been approved and sent for indexing.`,
+      className: "bg-green-50 border-green-200 text-green-800"
+    });
   };
 
   if (selectedSample) {
@@ -240,12 +199,12 @@ const FactsSummaryReviewInterface = () => {
             <div className="text-sm text-gray-600">
               Overall Batch Progress: {reviewedSamples}/10 samples reviewed ({goodSamples} good)
             </div>
-            {allSamplesReviewed && (
+            {allSamplesReviewed && goodSamples > 5 && (
               <Button
-                onClick={handleCompleteReview}
-                className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-white text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-white text-lg px-6 py-3"}
+                onClick={handleSendToIndexing}
+                className="bg-green-600 hover:bg-green-700 text-white text-lg px-6 py-3"
               >
-                {goodSamples > 5 ? 'Complete & Move to Indexing' : 'Send to Error Queue'}
+                Send to Indexing
               </Button>
             )}
           </div>
@@ -295,12 +254,12 @@ const FactsSummaryReviewInterface = () => {
           </p>
         </div>
 
-        {allSamplesReviewed && (
+        {allSamplesReviewed && goodSamples > 5 && (
           <Button
-            onClick={handleCompleteReview}
-            className={goodSamples > 5 ? "bg-teal-700 hover:bg-teal-800 text-white text-lg px-6 py-3" : "bg-red-600 hover:bg-red-700 text-white text-lg px-6 py-3"}
+            onClick={handleSendToIndexing}
+            className="bg-green-600 hover:bg-green-700 text-white text-lg px-6 py-3"
           >
-            {goodSamples > 5 ? 'Complete Review & Move to Indexing' : 'Send to Error Queue'}
+            Send to Indexing
           </Button>
         )}
       </div>
@@ -320,15 +279,15 @@ const FactsSummaryReviewInterface = () => {
         {reviewedSamples > 0 && (
           <div className="mt-2 text-sm">
             {allSamplesReviewed ? (
-                goodSamples > 5 ? (
+              goodSamples > 5 ? (
                 <span className="text-green-600 font-medium">
-                    ✓ Batch quality is good ({goodSamples}/10). Ready for final decision.
+                  ✓ Batch quality is good ({goodSamples}/10). Ready to send to indexing.
                 </span>
-                ) : (
+              ) : (
                 <span className="text-red-600 font-medium">
-                    ⚠ Batch quality is poor ({goodSamples}/10). Requires manual intervention if finalized.
+                  ⚠ Batch quality is poor ({goodSamples}/10). Requires manual intervention.
                 </span>
-                )
+              )
             ) : (
               <span className="text-gray-600">Review {10 - reviewedSamples} more sample(s) to determine batch quality.</span>
             )}

@@ -1,31 +1,35 @@
 
 import React, { useState } from "react";
-import { useApp } from "@/contexts/AppContext";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
-import MockPdfViewer from "@/components/MockPdfViewer";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { getBasicExtractionQueueBatchesDetailed } from "@/lib/mock-data";
+import BatchDetailView from "./BatchDetailView";
+import { toast } from "@/hooks/use-toast";
 
 const BasicExtractionQueue = () => {
-  const { extractionBatches } = useApp();
   const navigate = useNavigate();
-
-  const [selectedBatch, setSelectedBatch] = useState(null);
-  const [showProgressDialog, setShowProgressDialog] = useState(false);
-  const [showMockPdfViewer, setShowMockPdfViewer] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [selectedBatchId, setSelectedBatchId] = useState(null);
+  
+  const extractionBatches = getBasicExtractionQueueBatchesDetailed();
 
   const handleViewProgress = (batch) => {
-    setSelectedBatch(batch);
-    setShowProgressDialog(true);
+    setSelectedBatchId(batch.id);
+    toast({
+      title: "Viewing batch details",
+      description: `Opening detailed view for ${batch.name}`,
+      className: "bg-blue-50 border-blue-200 text-blue-800"
+    });
   };
 
-  const handleViewPdf = (document) => {
-    setSelectedDocument(document);
-    setShowMockPdfViewer(true);
+  const handleBackToQueue = () => {
+    setSelectedBatchId(null);
   };
+
+  if (selectedBatchId) {
+    return <BatchDetailView batchId={selectedBatchId} onBack={handleBackToQueue} />;
+  }
 
   return (
     <div className="p-6">
@@ -64,7 +68,7 @@ const BasicExtractionQueue = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {extractionBatches.length > 0 ? (
               extractionBatches.map((batch) => (
-                <tr key={batch.id}>
+                <tr key={batch.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{batch.name}</div>
                     <div className="text-sm text-gray-500">{batch.id}</div>
@@ -82,7 +86,11 @@ const BasicExtractionQueue = () => {
                     <StatusBadge status={batch.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Button size="sm" onClick={() => handleViewProgress(batch)}>
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleViewProgress(batch)}
+                      className="bg-teal-600 hover:bg-teal-700 text-white"
+                    >
                       View Progress
                     </Button>
                   </td>
@@ -98,77 +106,6 @@ const BasicExtractionQueue = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Progress Dialog */}
-      <Dialog open={showProgressDialog} onOpenChange={setShowProgressDialog}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Batch Progress: {selectedBatch?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Filename
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Uploaded At
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Uploaded By
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      View PDF
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {selectedBatch?.documents?.map((document) => (
-                    <tr key={document.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{document.filename}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(document.uploadedAt).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {document.uploadedBy}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusBadge status={document.status} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Button size="sm" onClick={() => handleViewPdf(document)}>
-                          View PDF
-                        </Button>
-                      </td>
-                    </tr>
-                  )) || (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
-                        No documents in this batch.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* PDF Viewer */}
-      {showMockPdfViewer && (
-        <MockPdfViewer
-          caseName={selectedDocument?.filename}
-          onClose={() => setShowMockPdfViewer(false)}
-        />
-      )}
     </div>
   );
 };

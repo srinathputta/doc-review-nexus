@@ -185,6 +185,100 @@ export const getMockExtractionDocuments = () => {
   ];
 };
 
+// Add new mock batches for basic extraction queue
+const mockBasicExtractionBatches = [
+  {
+    id: 'basic-batch-1',
+    name: 'Contract Documents Set A',
+    uploadedAt: '2023-12-15T10:00:00Z',
+    uploadedBy: 'john.doe@company.com',
+    totalDocuments: 15,
+    status: 'pending_basic_extraction',
+    documents: [
+      {
+        id: 'doc-basic-1',
+        filename: 'employment_contract_2023.pdf',
+        status: 'pending_basic_extraction',
+        uploadedAt: '2023-12-15T10:00:00Z',
+        uploadedBy: 'john.doe@company.com',
+        batchId: 'basic-batch-1',
+        pdfUrl: '/sample-pdf.pdf'
+      },
+      {
+        id: 'doc-basic-2',
+        filename: 'service_agreement_draft.pdf',
+        status: 'basic_extraction_in_progress',
+        uploadedAt: '2023-12-15T10:00:00Z',
+        uploadedBy: 'john.doe@company.com',
+        batchId: 'basic-batch-1',
+        pdfUrl: '/sample-pdf.pdf'
+      },
+      {
+        id: 'doc-basic-3',
+        filename: 'vendor_contract_v2.pdf',
+        status: 'basic_extracted',
+        uploadedAt: '2023-12-15T10:00:00Z',
+        uploadedBy: 'john.doe@company.com',
+        batchId: 'basic-batch-1',
+        pdfUrl: '/sample-pdf.pdf'
+      }
+      // ... additional documents would be generated
+    ]
+  },
+  {
+    id: 'basic-batch-2',
+    name: 'Legal Briefs Collection',
+    uploadedAt: '2023-12-14T11:30:00Z',
+    uploadedBy: 'sarah.wilson@lawfirm.com',
+    totalDocuments: 8,
+    status: 'basic_extraction_in_progress',
+    documents: [
+      {
+        id: 'doc-basic-4',
+        filename: 'case_brief_smith_v_jones.pdf',
+        status: 'basic_extraction_in_progress',
+        uploadedAt: '2023-12-14T11:30:00Z',
+        uploadedBy: 'sarah.wilson@lawfirm.com',
+        batchId: 'basic-batch-2',
+        pdfUrl: '/sample-pdf.pdf'
+      },
+      {
+        id: 'doc-basic-5',
+        filename: 'motion_to_dismiss.pdf',
+        status: 'basic_extracted',
+        uploadedAt: '2023-12-14T11:30:00Z',
+        uploadedBy: 'sarah.wilson@lawfirm.com',
+        batchId: 'basic-batch-2',
+        pdfUrl: '/sample-pdf.pdf'
+      }
+    ]
+  }
+];
+
+// Add facts & summary review batches
+const mockFactsSummaryBatches = [
+  {
+    id: 'fs-batch-1',
+    name: 'Supreme Court Cases 2023',
+    uploadDate: '2023-12-10',
+    totalDocuments: 25,
+    status: 'pending_summary_review',
+    samplesReviewed: 0,
+    samplesGood: 0,
+    documents: createSampleDocuments('fs-batch-1', 25, 500)
+  },
+  {
+    id: 'fs-batch-2',
+    name: 'Commercial Disputes Q4',
+    uploadDate: '2023-12-08',
+    totalDocuments: 18,
+    status: 'summary_review_in_progress',
+    samplesReviewed: 3,
+    samplesGood: 2,
+    documents: createSampleDocuments('fs-batch-2', 18, 525)
+  }
+];
+
 const mockBatches = [
   {
     id: 'batch-1',
@@ -253,3 +347,19 @@ const mockBatches = [
  documents: createSampleDocuments('batch-8', 15, 276),
  },
 ];
+
+export const getBasicExtractionQueueBatchesDetailed = () => {
+  return mockBasicExtractionBatches;
+};
+
+export const getBasicExtractionBatchById = (batchId) => {
+  return mockBasicExtractionBatches.find(batch => batch.id === batchId);
+};
+
+export const getFactsSummaryReviewBatches = () => {
+  return mockFactsSummaryBatches;
+};
+
+export const getFactsSummaryBatchById = (batchId) => {
+  return mockFactsSummaryBatches.find(batch => batch.id === batchId);
+};
