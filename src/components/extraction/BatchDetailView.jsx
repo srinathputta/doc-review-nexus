@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import MockPdfViewer from "@/components/MockPdfViewer";
 import { getBasicExtractionBatchById } from "@/lib/mock-data";
+import { toast } from "@/hooks/use-toast";
 
 const BatchDetailView = ({ batchId, onBack }) => {
   const [showMockPdfViewer, setShowMockPdfViewer] = useState(false);
@@ -24,6 +25,19 @@ const BatchDetailView = ({ batchId, onBack }) => {
   const handleViewPdf = (document) => {
     setSelectedDocument(document);
     setShowMockPdfViewer(true);
+    toast({
+      title: "Opening PDF viewer",
+      description: `Viewing ${document.filename}`,
+      className: "bg-blue-50 border-blue-200 text-blue-800"
+    });
+  };
+
+  const handleSendToBasicReview = () => {
+    toast({
+      title: "Batch sent to Basic Review",
+      description: `${batch.name} has been sent for basic details review`,
+      className: "bg-green-50 border-green-200 text-green-800"
+    });
   };
 
   return (
@@ -42,6 +56,17 @@ const BatchDetailView = ({ batchId, onBack }) => {
             <span><strong>Total Documents:</strong> {batch.totalDocuments}</span>
             <StatusBadge status={batch.status} />
           </div>
+          
+          {batch.status === 'basic_extracted' && (
+            <div className="mt-4">
+              <Button 
+                onClick={handleSendToBasicReview}
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                Send to Basic Details Review
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -52,10 +77,13 @@ const BatchDetailView = ({ batchId, onBack }) => {
                   Document
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Case Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Uploaded
+                  Case No
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -69,11 +97,14 @@ const BatchDetailView = ({ batchId, onBack }) => {
                     <div className="text-sm font-medium text-gray-900">{document.filename}</div>
                     <div className="text-sm text-gray-500">{document.id}</div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {document.basicMetadata?.caseName || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {document.basicMetadata?.caseNo || 'N/A'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusBadge status={document.status} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(document.uploadedAt).toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Button 
@@ -88,7 +119,7 @@ const BatchDetailView = ({ batchId, onBack }) => {
                 </tr>
               )) || (
                 <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                     No documents in this batch.
                   </td>
                 </tr>

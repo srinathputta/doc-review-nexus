@@ -1,3 +1,4 @@
+
 const createSampleMetadata = (index) => {
  return {
     caseNo: `CASE-${index}-2023`,
@@ -37,8 +38,8 @@ const createSummaryMetadata = (index) => {
   return {
     caseNo: `CASE-${index}-2023`,
     caseName: `Case ${index} v. State`,
-    facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court including property disputes, contract violations, and constitutional questions.`,
-    summary: `Summary of legal proceedings for case ${index}. The court examined evidence, heard arguments from both parties, and delivered a comprehensive judgment addressing all raised issues.`
+    facts: `These are the facts of case ${index}. The case involves various legal matters that were brought before the court including property disputes, contract violations, and constitutional questions. The plaintiff alleged multiple violations of their rights under various acts and sections of law.`,
+    summary: `Summary of legal proceedings for case ${index}. The court examined evidence, heard arguments from both parties, and delivered a comprehensive judgment addressing all raised issues. The court's decision was based on precedent cases and statutory interpretation.`
   };
 };
 
@@ -82,7 +83,6 @@ const getMockDocumentsByBatchIdWithOriginal = (batchId) => {
     };
   });
 };
-
 
 export const getMockBatches = () => {
   return mockBatches;
@@ -185,7 +185,7 @@ export const getMockExtractionDocuments = () => {
   ];
 };
 
-// Add new mock batches for basic extraction queue
+// Enhanced mock batches with better data structure
 const mockBasicExtractionBatches = [
   {
     id: 'basic-batch-1',
@@ -194,36 +194,7 @@ const mockBasicExtractionBatches = [
     uploadedBy: 'john.doe@company.com',
     totalDocuments: 15,
     status: 'pending_basic_extraction',
-    documents: [
-      {
-        id: 'doc-basic-1',
-        filename: 'employment_contract_2023.pdf',
-        status: 'pending_basic_extraction',
-        uploadedAt: '2023-12-15T10:00:00Z',
-        uploadedBy: 'john.doe@company.com',
-        batchId: 'basic-batch-1',
-        pdfUrl: '/sample-pdf.pdf'
-      },
-      {
-        id: 'doc-basic-2',
-        filename: 'service_agreement_draft.pdf',
-        status: 'basic_extraction_in_progress',
-        uploadedAt: '2023-12-15T10:00:00Z',
-        uploadedBy: 'john.doe@company.com',
-        batchId: 'basic-batch-1',
-        pdfUrl: '/sample-pdf.pdf'
-      },
-      {
-        id: 'doc-basic-3',
-        filename: 'vendor_contract_v2.pdf',
-        status: 'basic_extracted',
-        uploadedAt: '2023-12-15T10:00:00Z',
-        uploadedBy: 'john.doe@company.com',
-        batchId: 'basic-batch-1',
-        pdfUrl: '/sample-pdf.pdf'
-      }
-      // ... additional documents would be generated
-    ]
+    documents: createSampleDocuments('basic-batch-1', 15, 100)
   },
   {
     id: 'basic-batch-2',
@@ -232,30 +203,20 @@ const mockBasicExtractionBatches = [
     uploadedBy: 'sarah.wilson@lawfirm.com',
     totalDocuments: 8,
     status: 'basic_extraction_in_progress',
-    documents: [
-      {
-        id: 'doc-basic-4',
-        filename: 'case_brief_smith_v_jones.pdf',
-        status: 'basic_extraction_in_progress',
-        uploadedAt: '2023-12-14T11:30:00Z',
-        uploadedBy: 'sarah.wilson@lawfirm.com',
-        batchId: 'basic-batch-2',
-        pdfUrl: '/sample-pdf.pdf'
-      },
-      {
-        id: 'doc-basic-5',
-        filename: 'motion_to_dismiss.pdf',
-        status: 'basic_extracted',
-        uploadedAt: '2023-12-14T11:30:00Z',
-        uploadedBy: 'sarah.wilson@lawfirm.com',
-        batchId: 'basic-batch-2',
-        pdfUrl: '/sample-pdf.pdf'
-      }
-    ]
+    documents: createSampleDocuments('basic-batch-2', 8, 200)
+  },
+  {
+    id: 'basic-batch-3',
+    name: 'Supreme Court Cases December',
+    uploadedAt: '2023-12-13T09:00:00Z',
+    uploadedBy: 'legal.team@courts.gov',
+    totalDocuments: 25,
+    status: 'basic_extracted',
+    documents: createSampleDocuments('basic-batch-3', 25, 300)
   }
 ];
 
-// Add facts & summary review batches
+// Enhanced Facts & Summary review batches with comprehensive sample data
 const mockFactsSummaryBatches = [
   {
     id: 'fs-batch-1',
@@ -276,6 +237,16 @@ const mockFactsSummaryBatches = [
     samplesReviewed: 3,
     samplesGood: 2,
     documents: createSampleDocuments('fs-batch-2', 18, 525)
+  },
+  {
+    id: 'fs-batch-3',
+    name: 'Constitutional Law Cases',
+    uploadDate: '2023-12-05',
+    totalDocuments: 30,
+    status: 'pending_summary_review',
+    samplesReviewed: 0,
+    samplesGood: 0,
+    documents: createSampleDocuments('fs-batch-3', 30, 550)
   }
 ];
 
@@ -324,28 +295,31 @@ const mockBatches = [
   },
   {
     id: 'batch-6',
- name: 'IP Law Cases (Basic Review)',
+    name: 'IP Law Cases (Basic Review)',
     uploadDate: '2023-10-21T10:00:00Z',
- status: 'pending_basic_review', // Changed status
+    status: 'pending_basic_review',
     totalDocuments: 20,
     documents: createSampleDocuments('batch-6', 20, 221),
   },
-   {
+  {
     id: 'batch-7',
- name: 'Recent Contracts (Basic Review In Progress)',
+    name: 'Recent Contracts (Basic Review In Progress)',
     uploadDate: '2023-10-20T11:30:00Z',
- status: 'basic_review_in_progress', // Changed status
+    status: 'basic_review_in_progress',
     totalDocuments: 35,
     documents: createSampleDocuments('batch-7', 35, 241),
   },
- {
+  {
     id: 'batch-8',
- name: 'Trademark Filings (Summary Review)',
- uploadDate: '2023-10-19T08:00:00Z',
- status: 'pending_summary_review', // Added new status
+    name: 'Trademark Filings (Summary Review)',
+    uploadDate: '2023-10-19T08:00:00Z',
+    status: 'pending_summary_review',
     totalDocuments: 15,
- documents: createSampleDocuments('batch-8', 15, 276),
- },
+    documents: createSampleDocuments('batch-8', 15, 276),
+  },
+  // Add the enhanced batches
+  ...mockBasicExtractionBatches,
+  ...mockFactsSummaryBatches
 ];
 
 export const getBasicExtractionQueueBatchesDetailed = () => {

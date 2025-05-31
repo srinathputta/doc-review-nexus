@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
@@ -182,6 +183,18 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
     });
   };
 
+  const handleNextSample = () => {
+    if (selectedSampleIndex < sampleDocuments.length - 1) {
+      setSelectedSampleIndex(selectedSampleIndex + 1);
+    }
+  };
+
+  const handlePreviousSample = () => {
+    if (selectedSampleIndex > 0) {
+      setSelectedSampleIndex(selectedSampleIndex - 1);
+    }
+  };
+
   if (selectedSample) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
@@ -215,7 +228,7 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
           onSave={handleSaveSampleData}
           onMarkGood={() => handleMarkSample(true)}
           onMarkBad={() => handleMarkSample(false)}
-          showMarkingButtons={!allSamplesReviewed || reviewedSamples < 10 }
+          showMarkingButtons={!allSamplesReviewed || reviewedSamples < 10}
         />
 
         <div className="mt-6 flex justify-between items-center">

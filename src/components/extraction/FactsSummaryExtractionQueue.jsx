@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
 import { getSummaryExtractionQueueBatches } from "@/lib/mock-data";
+import { toast } from "@/hooks/use-toast";
 
 const FactsSummaryExtractionQueue = () => {
   const { setCurrentBatch, setBatches } = useApp();
@@ -23,6 +24,12 @@ const FactsSummaryExtractionQueue = () => {
         )
       );
       
+      toast({
+        title: "Extraction started",
+        description: `Facts & Summary extraction started for ${batch.name}`,
+        className: "bg-blue-50 border-blue-200 text-blue-800"
+      });
+      
       // Simulate extraction completion
       setTimeout(() => {
         setBatches(prev => 
@@ -32,8 +39,23 @@ const FactsSummaryExtractionQueue = () => {
               : b
           )
         );
+        
+        toast({
+          title: "Extraction completed",
+          description: `${batch.name} is ready for Facts & Summary review`,
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
       }, 3000);
     }
+  };
+
+  const handleSendToReview = (batch) => {
+    toast({
+      title: "Batch sent to review",
+      description: `${batch.name} has been sent to Facts & Summary Review`,
+      className: "bg-green-50 border-green-200 text-green-800"
+    });
+    navigate('/facts-summary-review');
   };
 
   const handleViewBatch = (batch) => {
@@ -94,7 +116,7 @@ const FactsSummaryExtractionQueue = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="text-teal-700 hover:text-teal-800"
+                          className="text-teal-700 hover:text-teal-800 border-teal-600 hover:bg-teal-50"
                           onClick={() => handleViewBatch(batch)}
                         >
                           View Progress
@@ -104,10 +126,19 @@ const FactsSummaryExtractionQueue = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="text-teal-700 hover:text-teal-800"
+                          className="text-teal-700 hover:text-teal-800 border-teal-600 hover:bg-teal-50"
                           onClick={() => handleStartExtraction(batch)}
                         >
                           Start F/S Extraction
+                        </Button>
+                      )}
+                      {batch.status === 'pending_summary_review' && (
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => handleSendToReview(batch)}
+                        >
+                          Send to F/S Review
                         </Button>
                       )}
                     </div>
