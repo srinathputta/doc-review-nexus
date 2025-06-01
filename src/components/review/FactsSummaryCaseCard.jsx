@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,17 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Save, X, Eye, Check, AlertTriangle } from "lucide-react";
+import { Edit, Save, X, Eye, Check } from "lucide-react";
 import MockPdfViewer from "@/components/MockPdfViewer";
 
 const FactsSummaryCaseCard = ({ 
   document, 
   onSave, 
   onCancel, 
-  onMarkGood, 
-  onMarkBad,
   onApproveAndNext,
-  showMarkingButtons = false 
+  showApproveButton = true 
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showMockPdfViewer, setShowMockPdfViewer] = useState(false);
@@ -51,14 +50,6 @@ const FactsSummaryCaseCard = ({
     }));
   };
 
-  const handleMarkGood = () => {
-    if (onMarkGood) onMarkGood();
-  };
-
-  const handleMarkBad = () => {
-    if (onMarkBad) onMarkBad();
-  };
-
   const handleApprove = () => {
     if (onApproveAndNext) {
       onApproveAndNext();
@@ -68,6 +59,9 @@ const FactsSummaryCaseCard = ({
   const handleViewPdf = () => {
     setShowMockPdfViewer(true);
   };
+
+  // Generate a sample PDF URL for demonstration
+  const pdfUrl = document.pdfUrl || `https://www.example.com/pdfs/${document.filename || document.id}.pdf`;
 
   return (
     <>
@@ -96,10 +90,10 @@ const FactsSummaryCaseCard = ({
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </Button>
-                {!showMarkingButtons && (
+                {showApproveButton && (
                   <Button size="sm" onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
                     <Check className="w-4 h-4 mr-1" />
-                    Approve & Next
+                    Approve & Continue
                   </Button>
                 )}
               </>
@@ -190,29 +184,6 @@ const FactsSummaryCaseCard = ({
               </div>
             </div>
           </div>
-
-          {showMarkingButtons && (
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800">Sample Review</h3>
-              <div className="flex justify-end space-x-4">
-                <Button
-                  variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-50"
-                  onClick={handleMarkBad}
-                >
-                  <AlertTriangle size={18} className="mr-2" />
-                  Mark as Needs Correction
-                </Button>
-                <Button
-                  onClick={handleMarkGood}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Check size={18} className="mr-2" />
-                  Mark as Good
-                </Button>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -220,6 +191,7 @@ const FactsSummaryCaseCard = ({
       {showMockPdfViewer && (
         <MockPdfViewer
           caseName={document.filename}
+          pdfUrl={pdfUrl}
           onClose={() => setShowMockPdfViewer(false)}
         />
       )}
