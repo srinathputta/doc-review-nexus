@@ -93,7 +93,7 @@ const ErrorSection = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-red-600">
-                      {batch.samplesGood !== undefined ? 'Low Quality Extraction' : 'Processing Error'}
+                      {batch.samplesGood !== undefined ? 'Upload Error' : 'Processing Error'}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
                       {batch.samplesGood !== undefined 

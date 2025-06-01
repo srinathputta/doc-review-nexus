@@ -54,7 +54,7 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col w-64 min-h-screen border-r bg-white">
       <div className="px-4 py-6 border-b">
-        <h1 className="text-xl font-semibold text-teal-700">DocuPilot</h1>
+        <h1 className="text-xl font-semibold text-teal-700">Dashboard</h1>
       </div>
       
       <div className="flex flex-col gap-1 p-2 flex-1">

@@ -5,8 +5,7 @@ import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
 import { getMockSamplesByBatchId } from "@/lib/mock-data";
 import FactsSummaryCaseCard from "./FactsSummaryCaseCard";
-import SampleDocumentsList from "./SampleDocumentsList";
-import ReviewProgressBar from "./ReviewProgressBar";
+import { StatusBadge } from "@/components/ui/status-badge"; // Assuming StatusBadge is used in the merged JSX
 import { toast } from "@/hooks/use-toast";
 
 const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
@@ -49,6 +48,7 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
     sampleDocuments[selectedSampleIndex] = {
       ...selectedSample,
       reviewStatus: 'reviewed_ai_output_approved'
+
     };
 
     toast({
@@ -71,6 +71,16 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
       description: `Sample ${sampleId} has been ${wasModified ? 'updated and' : ''} saved.`,
       className: "bg-blue-50 border-blue-200 text-blue-800"
     });
+
+    // Find the index of the sample that was just saved
+    const sampleIndexToUpdate = sampleDocuments.findIndex(sample => sample.id === sampleId);
+
+    if (sampleIndexToUpdate !== -1) {
+      sampleDocuments[sampleIndexToUpdate] = {
+        ...sampleDocuments[sampleIndexToUpdate],
+        reviewStatus: wasModified ? 'reviewed_manual_edit_approved' : 'reviewed_ai_output_approved',
+      };
+    }
   };
 
   const handleSendToIndexing = () => {
@@ -184,14 +194,80 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
         )}
       </div>
 
-      <ReviewProgressBar reviewedSamples={reviewedSamples} />
+      {/* Merged ReviewProgressBar JSX */}
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium text-gray-700">Sample Review Progress:</span>
+          <span className="text-sm text-gray-700">{reviewedSamples}/10 samples reviewed</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+          <div
+            className="bg-teal-600 h-2.5 rounded-full"
+            style={{ width: `${(reviewedSamples / 10) * 100}%` }}
+          ></div>
+        </div>
 
-      <SampleDocumentsList
-        sampleDocuments={sampleDocuments}
-        selectedSampleIndex={selectedSampleIndex}
-        onSelectSample={setSelectedSampleIndex}
-        allSamplesReviewed={allSamplesReviewed}
-      />
+        {reviewedSamples > 0 && (
+          <div className="mt-2 text-sm">
+            {allSamplesReviewed ? (
+              <span className="text-green-600 font-medium">
+                ✓ All samples reviewed. Ready to send to indexing.
+              </span>
+            ) : (
+              <span className="text-gray-600">Review {10 - reviewedSamples} more sample(s) to complete batch review.</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Merged SampleDocumentsList JSX */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Sample Document ID/Filename
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Case Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Case No
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Facts Available
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Review Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {sampleDocuments.length > 0
+              ? sampleDocuments.map((sample, index) => (
+                  <tr key={sample.id} className={selectedSampleIndex === index ? "bg-teal-50" : "hover:bg-gray-50"}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{sample.filename || sample.id}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sample.basicMetadata?.caseName || 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sample.basicMetadata?.caseNo || 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{sample.summaryMetadata?.facts ? 'Yes' : 'No'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={sample.reviewStatus || 'pending_sample_review'} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Button variant="outline" size="sm" onClick={() => setSelectedSampleIndex(index)} className="text-teal-700 hover:text-teal-800 border-teal-600 hover:bg-teal-50" disabled={allSamplesReviewed && sample.reviewStatus !== 'pending_sample_review'}>
+                        {sample.reviewStatus && sample.reviewStatus !== 'pending_sample_review' ? 'View/Edit' : 'Review'}
+                      </Button>
+                    </td>
+                  </tr>
+                )) : <tr><td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">No samples found for this batch.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
