@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Eye, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 
 const ErrorSection = () => {
   const [selectedBatch, setSelectedBatch] = useState(null);
@@ -15,10 +16,20 @@ const ErrorSection = () => {
   const handleViewBatch = (batch) => {
     setSelectedBatch(batch);
     setModalOpen(true);
+    toast({
+      title: "Error Details",
+      description: `Viewing error details for ${batch.name}`,
+      className: "bg-red-50 border-red-200 text-red-800"
+    });
   };
 
   const handleRetryBatch = (batchId) => {
     console.log(`Retrying batch ${batchId}`);
+    toast({
+      title: "Batch Retry",
+      description: `Retrying batch ${batchId}`,
+      className: "bg-yellow-50 border-yellow-200 text-yellow-800"
+    });
     // This would trigger a retry API call in production
   };
 
@@ -26,7 +37,7 @@ const ErrorSection = () => {
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-          <AlertTriangle className="w-8 h-8 text-red-500 mr-3" />Error
+          <AlertTriangle className="w-8 h-8 text-red-500 mr-3" />
           Error Queue - Manual Intervention Required
         </h1>
         <p className="text-gray-600 mt-2">
