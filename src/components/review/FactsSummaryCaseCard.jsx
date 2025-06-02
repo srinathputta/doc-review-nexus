@@ -82,7 +82,7 @@ const FactsSummaryCaseCard = ({
             onFieldChange={handleFieldChange}
           />
 
-          {/* Merged FactsSummarySection JSX */}
+          {/* Integrated Facts & Summary Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Facts & Summary</h3>
             <div className="space-y-4">

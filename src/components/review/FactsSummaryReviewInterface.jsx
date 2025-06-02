@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/back-button";
 import { useNavigate } from "react-router-dom";
 import { getMockSamplesByBatchId } from "@/lib/mock-data";
 import FactsSummaryCaseCard from "./FactsSummaryCaseCard";
-import { StatusBadge } from "@/components/ui/status-badge"; // Assuming StatusBadge is used in the merged JSX
+import { StatusBadge } from "@/components/ui/status-badge";
 import { toast } from "@/hooks/use-toast";
 
 const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
@@ -194,7 +194,7 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
         )}
       </div>
 
-      {/* Merged ReviewProgressBar JSX */}
+      {/* Integrated Review Progress Bar */}
       <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium text-gray-700">Sample Review Progress:</span>
@@ -220,7 +220,7 @@ const FactsSummaryReviewInterface = ({ currentBatch, setCurrentBatch }) => {
         )}
       </div>
 
-      {/* Merged SampleDocumentsList JSX */}
+      {/* Integrated Sample Documents List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full">
           <thead className="bg-gray-50">
